@@ -4,8 +4,7 @@
   *
   * S0: 				board[][] after constructor
   * PLAYER(s): 			the variable turn
-  * ACTION(s): 			one field in the matrix 
-  sMatrix[][]
+  * ACTION(s): 			one field in the matrix sMatrix[][]
   * RESULT(s, a): 		change in numbers of bricks of own colour?
   * CUTOFF-TEST(S):		the method legalMoves() returns 0 => method gameOn() returns false 					[TERMINAL-TEST(s)]
   * EVAL(s, p):			the method eval(int matrix[][]). evaluates desirability of given board state. 		[UTILITY(s, p)]
