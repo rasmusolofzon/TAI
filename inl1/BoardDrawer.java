@@ -1,8 +1,10 @@
+package reversiGame;
+
 public class BoardDrawer {
 
-	public String draw (int[][] matrix) {
+	public String draw (Board board) {
 		StringBuilder s = new StringBuilder();
-
+		int[][] matrix = board.getModel();
 		//OBS kräver för tillfället att encoding är satt till UTF8.
 		//Kan man göra geonom att sätta miljövariabel JAVA_TOOL_OPTIONS till -Dfile.encoding=UTF8
 		//dock inte optimalt, kanske kan lösa programmatiskt
@@ -31,20 +33,11 @@ public class BoardDrawer {
 	private String marker(int color) {
 		switch (color) {
 			case -1:
-			return "X";
-			case 1:
 			return "O";
+			case 1:
+			return "X";
 			default:
 			return " ";
 		}
 	}
-
-	/*public static void main (String[]args) {
-		BoardDrawer d = new BoardDrawer();
-		int[][] matrix = new int[10][10];
-		matrix[4][4] = 1;
-		matrix[4][6] = 4;
-		matrix[4][5] = -1;
-		System.out.println(d.draw(matrix));
-	}*/
 }
