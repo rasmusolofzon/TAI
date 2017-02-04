@@ -6,6 +6,7 @@ public class BoardDrawer {
 		//OBS kräver för tillfället att encoding är satt till UTF8.
 		//Kan man göra geonom att sätta miljövariabel JAVA_TOOL_OPTIONS till -Dfile.encoding=UTF8
 		//dock inte optimalt, kanske kan lösa programmatiskt
+		//https://stackoverflow.com/questions/361975/setting-the-default-java-character-encoding /mvh Rasmus
 		
 		s.append("      A   B   C   D   E   F   G   H"+"\n");
 		s.append("    ┌───┬───┬───┬───┬───┬───┬───┬───┐"+"\n");
@@ -38,12 +39,12 @@ public class BoardDrawer {
 		}
 	}
 
-	public static void main (String[]args) {
+	/*public static void main (String[]args) {
 		BoardDrawer d = new BoardDrawer();
 		int[][] matrix = new int[10][10];
 		matrix[4][4] = 1;
 		matrix[4][6] = 4;
 		matrix[4][5] = -1;
 		System.out.println(d.draw(matrix));
-	}
+	}*/
 }

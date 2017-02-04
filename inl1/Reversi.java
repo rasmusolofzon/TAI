@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 /**
   * Mapping of general elements of a search problem/game
   * ----------------------------------------------------
@@ -12,13 +13,13 @@
   */
 
 public class Reversi {
-    public int[][] board = new int[10][10];
+    public static int[][] board = new int[10][10]; //remove static later on, just for debugging under time pressure /raz
     public static final int STATEEMPTY = 0;
     public static final int STATEWHITE = -1;
     public static final int STATEBLACK = 1;
     public int turn;
-    public int[][] legalMovesMatrix = new int[10][10]; //three dimensions?
-  	public static final int CUTOFFVALUE = 3;
+    public int[][] legalMovesMatrix = new int[10][10]; 
+  	public static final int CUTOFFDEPTH = 3;
   	public int currentNbrBricks = 0;
     
     public Reversi() {
@@ -45,32 +46,32 @@ public class Reversi {
         }
         
         if (counter != 0) cont = true;
-        if (legalMoves().size() != 0) cont = true;
+        if (findLegalMoves(board).size() != 0) cont = true;
       
       	currentNbrBricks = 64 - counter;
         
         return cont;
     }
     
-    public ArrayList<String> legalMoves() {
+    public ArrayList<String> findLegalMoves(int[][] currentBoard) {
         ArrayList<String> legMoves = new ArrayList<String>();
         
         for (int i=1;i<9;i++) {
             for (int j=1;j<9;j++) {
-                if (board[i][j] == STATEEMPTY) {
+                if (currentBoard[i][j] == STATEEMPTY) {
                     boolean[][] matrix = checkNeighbours(i, j);
                     boolean legMove = false;
                     
-                    if (matrix[0][0]) if(searchNW(i-1, j-1)) legMove = true;
-                    if (matrix[1][0]) if(searchW(i, j-1)) legMove = true;
-                    if (matrix[2][0]) if(searchSW(i+1, j-1)) legMove = true;
+                    if (matrix[0][0]) if(directionSearch(i-1, j-1, "NW")) legMove = true;
+                    if (matrix[1][0]) if(directionSearch(i, j-1, "W")) legMove = true;
+                    if (matrix[2][0]) if(directionSearch(i+1, j-1, "SW")) legMove = true;
                     
-                    if (matrix[0][1]) if(searchN(i-1, j)) legMove = true;
-                    if (matrix[2][1]) if(searchS(i+1, j)) legMove = true;
+                    if (matrix[0][1]) if(directionSearch(i-1, j, "N")) legMove = true;
+                    if (matrix[2][1]) if(directionSearch(i+1, j, "S")) legMove = true;
                     
-                    if (matrix[0][2]) if(searchNE(i-1, j+1)) legMove = true;
-                    if (matrix[1][2]) if(searchE(i, j+1)) legMove = true;
-                    if (matrix[2][2]) if(searchSE(i+1, j+1)) legMove = true;
+                    if (matrix[0][2]) if(directionSearch(i-1, j+1, "NE")) legMove = true;
+                    if (matrix[1][2]) if(directionSearch(i, j+1, "E")) legMove = true;
+                    if (matrix[2][2]) if(directionSearch(i+1, j+1, "SE")) legMove = true;
                     
                     if (legMove) legMoves.add(Integer.toString(i) + Integer.toString(j));
                 } 
@@ -133,21 +134,21 @@ public class Reversi {
           	break;
         }
       	
-      	if (board[xCoord][yCoord] == (0-turn)) return search(xCoord, yCoord, direction);
+      	if (board[xCoord][yCoord] == (0-turn)) return directionSearch(xCoord, yCoord, direction);
         else if (board[xCoord][yCoord] == turn) return true;
         else return false;
     }
     
     public String miniMaxDecision(int[][] currentBoard) {
-		ArrayList<String> legalMoves = legalMoves(currentBoard);
-		//	 int x = Integer.parseInt(legalMoves.get(i).charAt(0));
-		//	 int y = Integer.parseInt(legalMoves.get(i).charAt(1));
+		ArrayList<String> legalMoves = findLegalMoves(currentBoard);
+		int x = Character.getNumericValue(legalMoves.get(0).charAt(0));
+		int y = Character.getNumericValue(legalMoves.get(0).charAt(1));
 		String move = legalMoves.get(0);
 		int value = minValue(currentBoard, x, y); //<-- need to init x & y before this?
       
-		for (int i=0; i<legalMoves.size(); i++) {
-			int x = Integer.parseInt(legalMoves.get(i).charAt(0));
-			int y = Integer.parseInt(legalMoves.get(i).charAt(1));
+		for (int i=1; i<legalMoves.size(); i++) {
+			/*int*/ x = Character.getNumericValue(legalMoves.get(i).charAt(0));
+			/*int*/ y = Character.getNumericValue(legalMoves.get(i).charAt(1));
 			int v = minValue(currentBoard, x, y);
 			if (value < v) {
 				value =  v;
@@ -160,44 +161,44 @@ public class Reversi {
 	
     public int maxValue(int[][] currentBoard, int x, int y) {
 		currentBoard[x][y] = turn;
-		if (cutoffValue()) return eval(currentBoard);
-		ArrayList<String> legalMoves = legalMoves(currentBoard);
-		int value = INTEGER.MIN_VALUE;
+		if (cutoffTest()) return eval(currentBoard);
+		ArrayList<String> legalMoves = findLegalMoves(currentBoard);
+		int value = Integer.MIN_VALUE;
 		for (int i=0; i<legalMoves.size(); i++) {
-			x = Integer.parseInt(legalMoves.get(i).charAt(0));
-			y = Integer.parseInt(legalMoves.get(i).charAt(1));
+			x = Character.getNumericValue(legalMoves.get(i).charAt(0));
+			y = Character.getNumericValue(legalMoves.get(i).charAt(1));
 			//currentBoard[x][y] = turn;
-			value = Math.max(value,minValue(currentBoard));
+			value = Math.max(value, minValue(currentBoard, x, y));
 		}
 		return value;
 	}
     
     public int minValue(int[][] currentBoard, int x, int y) {
 		currentBoard[x][y] = 0-turn;
-		if (cutoffValue()) return eval(currentBoard);
-		ArrayList<String> legalMoves = legalMoves(currentBoard);
-		int value = INTEGER.MAX_VALUE;
+		if (cutoffTest()) return eval(currentBoard);
+		ArrayList<String> legalMoves = findLegalMoves(currentBoard);
+		int value = Integer.MAX_VALUE;
 		for (int i=0; i<legalMoves.size(); i++) {
-			x = Integer.parseInt(legalMoves.get(i).charAt(0));
-			y = Integer.parseInt(legalMoves.get(i).charAt(1));
+			x = Character.getNumericValue(legalMoves.get(i).charAt(0));
+			y = Character.getNumericValue(legalMoves.get(i).charAt(1));
 			//currentBoard[x][y] = 0-turn;
-			value = Math.min(value,maxValue(currentBoard));
+			value = Math.min(value,maxValue(currentBoard, x, y));
 		}
 		return value;
     }
 	
     public String ab_search(int[][] currentBoard) {
-		ArrayList<String> legalMoves = legalMoves(currentBoard);
-		//	 int x = Integer.parseInt(legalMoves.get(i).charAt(0));
-		//	 int y = Integer.parseInt(legalMoves.get(i).charAt(1));
+		ArrayList<String> legalMoves = findLegalMoves(currentBoard);
+		int x = Character.getNumericValue(legalMoves.get(0).charAt(0));
+		int y = Character.getNumericValue(legalMoves.get(0).charAt(1));
 		String move = legalMoves.get(0);
-		int alpha = INTEGER.MIN_VALUE;
-		int beta = INTEGER.MAX_VALUE;
+		int alpha = Integer.MIN_VALUE;
+		int beta = Integer.MAX_VALUE;
       	int value = ab_minValue(currentBoard, x, y, alpha, beta);
       
       	for (int i=0; i<legalMoves.size(); i++) {
-        	int x = Integer.parseInt(legalMoves.get(i).charAt(0));
-        	int y = Integer.parseInt(legalMoves.get(i).charAt(1));
+        	/*int*/ x = Character.getNumericValue(legalMoves.get(i).charAt(0));
+        	/*int*/ y = Character.getNumericValue(legalMoves.get(i).charAt(1));
         	int v = ab_minValue(currentBoard, x, y, alpha, beta);
         	if (value < v) {
          	   value =  v;
@@ -210,12 +211,12 @@ public class Reversi {
 	
     public int ab_maxValue(int[][] currentBoard, int x, int y, int alpha, int beta) {
 		currentBoard[x][y] = turn;
-		if (cutoffValue()) return eval(currentBoard);
-		ArrayList<String> legalMoves = legalMoves(currentBoard);
-		int value = INTEGER.MIN_VALUE;
+		if (cutoffTest()) return eval(currentBoard);
+		ArrayList<String> legalMoves = findLegalMoves(currentBoard);
+		int value = Integer.MIN_VALUE;
 		for (int i=0; i<legalMoves.size(); i++) {
-			x = Integer.parseInt(legalMoves.get(i).charAt(0));
-			y = Integer.parseInt(legalMoves.get(i).charAt(1));
+			x = Character.getNumericValue(legalMoves.get(i).charAt(0));
+			y = Character.getNumericValue(legalMoves.get(i).charAt(1));
 			//currentBoard[x][y] = turn;
 			value = Math.max(value, ab_minValue(currentBoard, x, y, alpha, beta));
 			if (value >= beta) return value;
@@ -226,12 +227,12 @@ public class Reversi {
     
     public int ab_minValue(int[][] currentBoard, int x, int y, int alpha, int beta) {
 		currentBoard[x][y] = 0-turn;
-		if (cutoffValue()) return eval(currentBoard);
-		ArrayList<String> legalMoves = legalMoves(currentBoard);
-		int value = INTEGER.MAX_VALUE;
+		if (cutoffTest()) return eval(currentBoard);
+		ArrayList<String> legalMoves = findLegalMoves(currentBoard);
+		int value = Integer.MAX_VALUE;
 		for (int i=0; i<legalMoves.size(); i++) {
-			x = Integer.parseInt(legalMoves.get(i).charAt(0));
-			y = Integer.parseInt(legalMoves.get(i).charAt(1));
+			x = Character.getNumericValue(legalMoves.get(i).charAt(0));
+			y = Character.getNumericValue(legalMoves.get(i).charAt(1));
 			//currentBoard[x][y] = 0-turn;
 			value = Math.min(value, ab_maxValue(currentBoard, x, y, alpha, beta));
 			if (value <= alpha) return value;
@@ -241,7 +242,7 @@ public class Reversi {
     }
   
   	public int eval(int[][] matrix) {
-      	int value;
+      	int value = 0;
         for (int i=1;i<9;i++) {
             for (int j=1;j<9;j++) {
             	if (matrix[i][j] == turn) value++;
@@ -260,7 +261,7 @@ public class Reversi {
             }
         }
       
-      	return ((bricks - currentNbrBricks) > 3);
+      	return ((bricks - currentNbrBricks) > CUTOFFDEPTH);
     }
   
     public void play (int color, int x, int y) {
@@ -272,6 +273,7 @@ public class Reversi {
       
     public static void main(String[] args) {
         Reversi r = new Reversi();
+		BoardDrawer d = new BoardDrawer();
        // r.board[3][3] = r.STATEWHITE;
         //System.out.println(r.searchNW(6, 6));
       
@@ -301,13 +303,16 @@ public class Reversi {
           ((playerColour == 'w') ? "black" : "white") + ".");
         System.out.println("My move consideration time limit is " +
           timeLimit + " ms. Let's play: ");
+		
+		
+		System.out.println(d.draw(board));
         
-        while (gameOn()) {
+        /*while (gameOn()) {
           	
             //Do stuff..
             
             turn -= turn;
-        }
+        }*/
     }
 }
 
