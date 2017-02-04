@@ -1,4 +1,3 @@
-package reversiGame;
 import java.util.*;
 
 public class Board {

@@ -1,5 +1,3 @@
-package reversiGame;
-
 public class BoardDrawer {
 
 	public String draw (Board board) {
