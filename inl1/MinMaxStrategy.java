@@ -1,5 +1,4 @@
 import java.util.*;
-
 public class MinMaxStrategy implements GameStrategy {
 
 	private int discs;
