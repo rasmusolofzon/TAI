@@ -298,14 +298,14 @@ public class Reversi {
               System.exit(1);
              }
         }
-        System.out.println("Hi, and welcome to Reversi. You are playing as " +
+        System.out.println("\nHi, and welcome to Reversi. You are playing as " +
           ((playerColour == 'b') ? "black" : "white") + ", and I am playing as " +
           ((playerColour == 'w') ? "black" : "white") + ".");
         System.out.println("My move consideration time limit is " +
-          timeLimit + " ms. Let's play: ");
+          timeLimit + " ms. Let's play: \n");
 		
 		
-		System.out.println(d.draw(board));
+		//System.out.println(d.draw(board));
         
         /*while (gameOn()) {
           	

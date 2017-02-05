@@ -35,7 +35,6 @@ public class Board {
 	public int getNbrOfDiscs () {
 		return nbrOfDiscs;
 	}
-	
 
 	public void play (String move) {
 		//place disk
@@ -45,16 +44,16 @@ public class Board {
 		
 		boolean[][] matrix = checkNeighbours(x, y);
 		boolean legMove = false;
-		if (matrix[0][0]) if(directionSearch(x-1, y-1, "NW")) flip(x-1, y-1,"NW");
-		if (matrix[1][0]) if(directionSearch(x, y-1, "W")) flip(x, y-1, "W");
-		if (matrix[2][0]) if(directionSearch(x+1, y-1, "SW")) flip(x+1, y-1, "SW");
+		if (matrix[0][0]) if(directionSearch(x-1, y-1, "NW", false)) directionSearch(x-1, y-1,"NW", true);
+		if (matrix[1][0]) if(directionSearch(x, y-1, "W", false)) directionSearch(x, y-1, "W", true);
+		if (matrix[2][0]) if(directionSearch(x+1, y-1, "SW", false)) directionSearch(x+1, y-1, "SW", true);
 
-		if (matrix[0][1]) if(directionSearch(x-1, y, "N")) flip(x-1, y, "N");
-		if (matrix[2][1]) if(directionSearch(x+1, y, "S")) flip(x+1, y, "S");
+		if (matrix[0][1]) if(directionSearch(x-1, y, "N", false)) directionSearch(x-1, y, "N", true);
+		if (matrix[2][1]) if(directionSearch(x+1, y, "S", false)) directionSearch(x+1, y, "S", true);
 
-		if (matrix[0][2]) if(directionSearch(x-1, y+1, "NE")) flip(x-1, y+1, "NE");
-		if (matrix[1][2]) if(directionSearch(x, y+1, "E")) flip(x, y+1, "E");
-		if (matrix[2][2]) if(directionSearch(x+1, y+1, "SE")) flip(x+1, y+1, "SE");
+		if (matrix[0][2]) if(directionSearch(x-1, y+1, "NE", false)) directionSearch(x-1, y+1, "NE", true);
+		if (matrix[1][2]) if(directionSearch(x, y+1, "E", false)) directionSearch(x, y+1, "E", true);
+		if (matrix[2][2]) if(directionSearch(x+1, y+1, "SE", false)) directionSearch(x+1, y+1, "SE", true);
 
 		turn = 0-turn;
 		nbrOfDiscs++;
@@ -89,64 +88,21 @@ public class Board {
 		return legMoves;
 	}
 
-	private boolean flip (int x, int y, String direction) {
-		if (x == 0 || x == 9 || y == 0 || y == 9) return false;
-		board[x][y] = turn;
-		int xCoord = x;
-		int yCoord = y;
-
-		switch (direction) {
-		case "NW":
-			xCoord--;
-			yCoord--;
-			break;
-		case "N":
-			xCoord--;
-			break;
-		case "NE":
-			xCoord--;
-			yCoord++;
-			break;
-		case "E":
-			yCoord++;
-			break;
-		case "SE":
-			xCoord++;
-			yCoord++;
-			break;
-		case "S":
-			xCoord++;
-			break;
-		case "SW":
-			xCoord++;
-			yCoord--;
-			break;
-		case "W":
-			yCoord--;
-			break;
-		}
-
-		if (board[xCoord][yCoord] == (0-turn)) return directionSearch(xCoord, yCoord, direction);
-		else if (board[xCoord][yCoord] == turn) return true;
-		else return false;
-	}
-	
-	
 	private boolean isLegalMove (int x, int y) {
 		//gives all neighbours of opposing color
 		boolean[][] matrix = checkNeighbours(x, y);
 		
 		boolean legMove = false;
-		if (matrix[0][0]) if(directionSearch(x-1, y-1, "NW")) legMove = true;
-		if (matrix[1][0]) if(directionSearch(x, y-1, "W")) legMove = true;
-		if (matrix[2][0]) if(directionSearch(x+1, y-1, "SW")) legMove = true;
+		if (matrix[0][0]) if(directionSearch(x-1, y-1, "NW", false)) legMove = true;
+		if (matrix[1][0]) if(directionSearch(x, y-1, "W", false)) legMove = true;
+		if (matrix[2][0]) if(directionSearch(x+1, y-1, "SW", false)) legMove = true;
 
-		if (matrix[0][1]) if(directionSearch(x-1, y, "N")) legMove = true;
-		if (matrix[2][1]) if(directionSearch(x+1, y, "S")) legMove = true;
+		if (matrix[0][1]) if(directionSearch(x-1, y, "N", false)) legMove = true;
+		if (matrix[2][1]) if(directionSearch(x+1, y, "S", false)) legMove = true;
 
-		if (matrix[0][2]) if(directionSearch(x-1, y+1, "NE")) legMove = true;
-		if (matrix[1][2]) if(directionSearch(x, y+1, "E")) legMove = true;
-		if (matrix[2][2]) if(directionSearch(x+1, y+1, "SE")) legMove = true;
+		if (matrix[0][2]) if(directionSearch(x-1, y+1, "NE", false)) legMove = true;
+		if (matrix[1][2]) if(directionSearch(x, y+1, "E", false)) legMove = true;
+		if (matrix[2][2]) if(directionSearch(x+1, y+1, "SE", false)) legMove = true;
 		return legMove;
 	}
 	
@@ -167,8 +123,10 @@ public class Board {
 		return interestingNeighbours;
 	}
 
-	public boolean directionSearch(int x, int y, String direction) {
+	public boolean directionSearch(int x, int y, String direction, boolean flip) {
 		if (x == 0 || x == 9 || y == 0 || y == 9) return false;
+		
+		if (flip) board[x][y] = turn;
 
 		int xCoord = x;
 		int yCoord = y;
@@ -204,7 +162,7 @@ public class Board {
 			break;
 		}
 
-		if (board[xCoord][yCoord] == (0-turn)) return directionSearch(xCoord, yCoord, direction);
+		if (board[xCoord][yCoord] == (0-turn)) return directionSearch(xCoord, yCoord, direction, false);
 		else if (board[xCoord][yCoord] == turn) return true;
 		else return false;
 	}

@@ -43,12 +43,12 @@ public class Main {
 		}
 		
 		if (playMode.equals("play")) {
-			System.out.print("Hi, and welcome to Reversi. You are playing as " +
+			System.out.print("\nHi, and welcome to Reversi. You are playing as " +
 					((playerColour == 'b') ? "black (X)" : "white (O)") + ", and I am playing as " +
 					((playerColour == 'w') ? "black (X)" : "white (O)") + ".");
 		} else System.out.print("Hi, and welcome to Reversi. I will demonstrate the game by playing vs. myself. Black (X) starts. ");
 		System.out.print("I will be using the MinMax strategy" + ((strategy.equals("ab")) ? " with Alpha-Beta pruning. " : ". "));
-		System.out.println("My move consideration time limit is " + timeLimit + " ms. Let's play: ");
+		System.out.println("My move consideration time limit is " + timeLimit + " ms. Let's play: \n");
 		
 		System.out.println(d.draw(board));
 		
