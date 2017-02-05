@@ -43,9 +43,19 @@ public class Board {
 		int y = Character.getNumericValue(move.charAt(1));
 		board[x][y] = turn;
 		
-		boolean[][] neighbours = checkNeighbours(x,y);
-		
-		//turn squares that needs turning
+		boolean[][] matrix = checkNeighbours(x, y);
+		boolean legMove = false;
+		if (matrix[0][0]) if(directionSearch(x-1, y-1, "NW")) flip(x-1, y-1,"NW");
+		if (matrix[1][0]) if(directionSearch(x, y-1, "W")) flip(x, y-1, "W");
+		if (matrix[2][0]) if(directionSearch(x+1, y-1, "SW")) flip(x+1, y-1, "SW");
+
+		if (matrix[0][1]) if(directionSearch(x-1, y, "N")) flip(x-1, y, "N");
+		if (matrix[2][1]) if(directionSearch(x+1, y, "S")) flip(x+1, y, "S");
+
+		if (matrix[0][2]) if(directionSearch(x-1, y+1, "NE")) flip(x-1, y+1, "NE");
+		if (matrix[1][2]) if(directionSearch(x, y+1, "E")) flip(x, y+1, "E");
+		if (matrix[2][2]) if(directionSearch(x+1, y+1, "SE")) flip(x+1, y+1, "SE");
+
 		turn = 0-turn;
 		nbrOfDiscs++;
 	}
@@ -78,8 +88,52 @@ public class Board {
 
 		return legMoves;
 	}
+
+	private boolean flip (int x, int y, String direction) {
+		if (x == 0 || x == 9 || y == 0 || y == 9) return false;
+		board[x][y] = turn;
+		int xCoord = x;
+		int yCoord = y;
+
+		switch (direction) {
+		case "NW":
+			xCoord--;
+			yCoord--;
+			break;
+		case "N":
+			xCoord--;
+			break;
+		case "NE":
+			xCoord--;
+			yCoord++;
+			break;
+		case "E":
+			yCoord++;
+			break;
+		case "SE":
+			xCoord++;
+			yCoord++;
+			break;
+		case "S":
+			xCoord++;
+			break;
+		case "SW":
+			xCoord++;
+			yCoord--;
+			break;
+		case "W":
+			yCoord--;
+			break;
+		}
+
+		if (board[xCoord][yCoord] == (0-turn)) return directionSearch(xCoord, yCoord, direction);
+		else if (board[xCoord][yCoord] == turn) return true;
+		else return false;
+	}
+	
 	
 	private boolean isLegalMove (int x, int y) {
+		//gives all neighbours of opposing color
 		boolean[][] matrix = checkNeighbours(x, y);
 		
 		boolean legMove = false;
