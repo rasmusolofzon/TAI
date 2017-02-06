@@ -54,18 +54,31 @@ public class Main {
 		
 		System.out.println("before loop");
 
-		while (!board.terminalState()) {
+		int passCounter = 0;
+		while (!board.terminalState() || passCounter < 2) {
 
-			String nextMove = strat.nextMove(board);
-			System.out.println(nextMove);
-			board.play(nextMove);
-			System.out.println(d.draw(board));
+			if (board.terminalState()) passCounter++;
+			else {
+				String nextMove = strat.nextMove(board);
+				System.out.println(nextMove);
+				board.play(nextMove);
+				System.out.println(d.draw(board));
+				passCounter = 0;
+			}
 			try {
-				Thread.sleep(500);
+				Thread.sleep(50);
 			}
 			catch (Exception e) {
-				//jahaja
 			}
 		}
+
+		int whites = board.getNbrOfWhites();
+		int blacks = board.getNbrOfBlacks();
+		System.out.println("The game has ended.");
+		System.out.println("White has " + whites + " discs.");
+		System.out.println("Black has " + blacks + " discs.");
+		if (whites==blacks) System.out.println("The game was a draw.");
+		else if (whites<blacks) System.out.println("Black wins!");
+		else if (whites>blacks) System.out.println("White wins!");
 	}
 }

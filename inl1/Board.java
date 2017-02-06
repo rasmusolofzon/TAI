@@ -36,6 +36,26 @@ public class Board {
 		return nbrOfDiscs;
 	}
 
+	public int getNbrOfWhites () {
+		int whites = 0;
+		for (int i=1;i<9;i++) {
+            for (int j=1;j<9;j++) {
+            	if (board[i][j]==STATEWHITE) whites++;
+            }
+        }
+        return whites;
+	}
+
+	public int getNbrOfBlacks () {
+		int blacks = 0;
+		for (int i=1;i<9;i++) {
+            for (int j=1;j<9;j++) {
+            	if (board[i][j]==STATEBLACK) blacks++;
+            }
+        }
+        return blacks;
+	}
+
 	public void play (String move) {
 		//place disk
 		int x = Character.getNumericValue(move.charAt(0));
@@ -161,9 +181,8 @@ public class Board {
 			yCoord--;
 			break;
 		}
-
-		if (board[xCoord][yCoord] == (0-turn)) return directionSearch(xCoord, yCoord, direction, false);
-		else if (board[xCoord][yCoord] == turn) return true;
+		if (board[xCoord][yCoord] == (0-turn)) return directionSearch(xCoord, yCoord, direction, flip);
+		else if (board[xCoord][yCoord] == turn) return !flip;
 		else return false;
 	}
 }
