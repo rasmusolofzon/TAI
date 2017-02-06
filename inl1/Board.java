@@ -71,8 +71,8 @@ public class Board {
 		//place disk
 		int x = Character.getNumericValue(move.charAt(0));
 		int y = Character.getNumericValue(move.charAt(1));
-		
-		if (!isLegalMove(x,y)) throw new IllegalArgumentException("Illegl move, try again: ");
+
+		if (!isLegalMove(x,y)) throw new IllegalArgumentException("  Illegal move, try again: ");
 
 		board[x][y] = turn;
 		
