@@ -1,4 +1,9 @@
+import java.util.Scanner;
+import java.io.*;
+import java.lang.IllegalArgumentException;
 public class Main {
+
+	private static final char[] translationTable = {'A','B','C','D','E','F','G','H'};
 
 	public static void main(String[] args) {
 
@@ -42,33 +47,91 @@ public class Main {
 			}
 		}
 		
+		int passCounter = 0;
+
 		if (playMode.equals("play")) {
 			System.out.print("\nHi, and welcome to Reversi. You are playing as " +
 					((playerColour == 'b') ? "black (X)" : "white (O)") + ", and I am playing as " +
-					((playerColour == 'w') ? "black (X)" : "white (O)") + ".");
-		} else System.out.print("Hi, and welcome to Reversi. I will demonstrate the game by playing vs. myself. Black (X) starts. ");
-		System.out.print("I will be using the MinMax strategy" + ((strategy.equals("ab")) ? " with Alpha-Beta pruning. " : ". "));
-		System.out.println("My move consideration time limit is " + timeLimit + " ms. Let's play: \n");
-		
-		System.out.println(d.draw(board));
-		
-		System.out.println("before loop");
+					((playerColour == 'w') ? "black (X)" : "white (O)") + ".\n");
+			System.out.println(d.draw(board));
 
-		int passCounter = 0;
-		while (!board.terminalState() || passCounter < 2) {
+			
+			
+			while (board.getNbrOfDiscs() < 64 && passCounter < 2) {
+				
+				if (board.terminalState()) {
+					System.out.println(board.whosTurn() + " is forced to pass.\n");
+					passCounter++;
+					board.swapTurn();
+				}
 
-			if (board.terminalState()) passCounter++;
-			else {
-				String nextMove = strat.nextMove(board);
-				System.out.println(nextMove);
-				board.play(nextMove);
+				//player's turn
+				if (playerColour == board.whosTurn().charAt(0)) {
+					System.out.println(board.whosTurn() + " to play, please enter a move: ");
+					try {
+						Scanner scan = new Scanner(System.in);
+						String playerMove = scan.nextLine();
+						correctFormat(playerMove);
+
+						int letter = (int) playerMove.charAt(0) - 16;
+						StringBuilder move = new StringBuilder("");
+						move.append(playerMove.charAt(1));
+						move.append((char)(letter));
+						System.out.println(move.toString());
+						board.play(move.toString());
+						passCounter=0;
+
+					}
+					catch (IOException e) {
+						System.out.println(e.getMessage());
+					}
+					catch (IllegalArgumentException e) {
+						System.out.println(e.getMessage());
+					}
+				}
+
+				//computer's turn
+				else {
+					String nextMove = strat.nextMove(board);
+					System.out.println(nextMove);
+					board.play(nextMove);
+					passCounter = 0;
+				}
 				System.out.println(d.draw(board));
-				passCounter = 0;
+				System.out.println("end of loop");
 			}
-			try {
-				Thread.sleep(50);
-			}
-			catch (Exception e) {
+
+		}
+
+		else {
+			System.out.print("Hi, and welcome to Reversi. I will demonstrate the game by playing vs. myself. Black (X) starts. ");
+			System.out.print("I will be using the MinMax strategy" + ((strategy.equals("ab")) ? " with Alpha-Beta pruning. " : ". "));
+			System.out.println("My move consideration time limit is " + timeLimit + " ms. Let's play: \n");
+		
+			System.out.println(d.draw(board));
+
+			
+			while (board.getNbrOfDiscs() < 64 || passCounter < 2) {
+
+
+				if (board.terminalState()) {
+					System.out.println(board.whosTurn() + " is forced to pass.\n");
+					passCounter++;
+					board.swapTurn();
+				}
+
+				else {
+					String nextMove = strat.nextMove(board);
+					System.out.println(nextMove);
+					board.play(nextMove);
+					System.out.println(d.draw(board));
+					passCounter = 0;
+				}
+				try {
+					Thread.sleep(50);
+				}
+				catch (Exception e) {
+				}
 			}
 		}
 
@@ -80,5 +143,22 @@ public class Main {
 		if (whites==blacks) System.out.println("The game was a draw.");
 		else if (whites<blacks) System.out.println("Black wins!");
 		else if (whites>blacks) System.out.println("White wins!");
+	}
+
+	/*
+	private static String translateMove (String move) {
+		return translationTable[Character.getNumericValue(move.charAt(0))-1] + move.charAt(1);
+	}
+	*/
+	private static void correctFormat (String move) throws IOException {
+		if (move.length() == 2) {
+			int number = Character.getNumericValue(move.charAt(0));
+			if (number >= 1 || number <= 8) {
+				for (int i=0; i<8; i++) {
+					if (move.charAt(0) == translationTable[i]) return;
+				}
+			}
+		}
+		throw  new IOException("Incorrect format, please try again: ");
 	}
 }

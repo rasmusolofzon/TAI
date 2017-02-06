@@ -1,4 +1,5 @@
 import java.util.*;
+import java.lang.IllegalArgumentException;
 
 public class Board {
 
@@ -56,10 +57,23 @@ public class Board {
         return blacks;
 	}
 
-	public void play (String move) {
+	public String whosTurn () {
+		if (turn==STATEWHITE) return "white";
+		else return "black";
+	}
+
+	public void swapTurn () {
+		turn = 0-turn;
+	}
+
+	public void play (String move) throws IllegalArgumentException {
+
 		//place disk
 		int x = Character.getNumericValue(move.charAt(0));
 		int y = Character.getNumericValue(move.charAt(1));
+		
+		if (!isLegalMove(x,y)) throw new IllegalArgumentException("Illegl move, try again: ");
+
 		board[x][y] = turn;
 		
 		boolean[][] matrix = checkNeighbours(x, y);
@@ -89,6 +103,7 @@ public class Board {
 		return value;
 	}
 
+	//checks if player who's currently playing can play, not terminal state altogether
 	public boolean terminalState () {
 		if (findLegalMoves().size() != 0) return false;
 		else return true;
