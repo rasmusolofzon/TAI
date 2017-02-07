@@ -58,8 +58,8 @@ public class Board {
 	}
 
 	public String whosTurn () {
-		if (turn==STATEWHITE) return "white";
-		else return "black";
+		if (turn==STATEWHITE) return "white (O)";
+		else return "black (X)";
 	}
 
 	public void swapTurn () {
@@ -68,11 +68,10 @@ public class Board {
 
 	public void play (String move) throws IllegalArgumentException {
 
-		//place disk
 		int x = Character.getNumericValue(move.charAt(0));
 		int y = Character.getNumericValue(move.charAt(1));
 
-		if (!isLegalMove(x,y)) throw new IllegalArgumentException("  Illegal move, try again: ");
+		if (!isLegalMove(x,y) || (board[x][y] != STATEEMPTY)) throw new IllegalArgumentException("  Illegal move, try again: ");
 
 		board[x][y] = turn;
 		
@@ -127,7 +126,7 @@ public class Board {
 		//gives all neighbours of opposing color
 		boolean[][] matrix = checkNeighbours(x, y);
 		
-		boolean legMove = false;
+		boolean legMove = false;			
 		if (matrix[0][0]) if(directionSearch(x-1, y-1, "NW", false)) legMove = true;
 		if (matrix[1][0]) if(directionSearch(x, y-1, "W", false)) legMove = true;
 		if (matrix[2][0]) if(directionSearch(x+1, y-1, "SW", false)) legMove = true;
@@ -138,6 +137,7 @@ public class Board {
 		if (matrix[0][2]) if(directionSearch(x-1, y+1, "NE", false)) legMove = true;
 		if (matrix[1][2]) if(directionSearch(x, y+1, "E", false)) legMove = true;
 		if (matrix[2][2]) if(directionSearch(x+1, y+1, "SE", false)) legMove = true;
+		
 		return legMove;
 	}
 	

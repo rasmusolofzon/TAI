@@ -4,7 +4,7 @@ public class BoardDrawer {
 		StringBuilder s = new StringBuilder();
 		int[][] matrix = board.getModel();
 		//OBS kräver för tillfället att encoding är satt till UTF8.
-		//Kan man göra geonom att sätta miljövariabel JAVA_TOOL_OPTIONS till -Dfile.encoding=UTF8
+		//Kan man göra genom att sätta miljövariabel JAVA_TOOL_OPTIONS till -Dfile.encoding=UTF8
 		//dock inte optimalt, kanske kan lösa programmatiskt
 		//https://stackoverflow.com/questions/361975/setting-the-default-java-character-encoding /mvh Rasmus
 		

@@ -1,22 +1,24 @@
 import java.util.Scanner;
 import java.io.*;
 import java.lang.IllegalArgumentException;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
+
 public class Main {
 
 	private static final char[] translationTable = {'A','B','C','D','E','F','G','H'};
 
 	public static void main(String[] args) {
-
-		Board board = new Board();
-		BoardDrawer d = new BoardDrawer();
-		int depth = 8;
-		GameStrategy strat = new AlfaBetaStrategy(depth);
-
 		char playerColour = 'b';
 		char aiColour = 'w';
 		int timeLimit = 10000; //milliseconds
 		String playMode = "auto";
 		String strategy = "ab";
+		
+		Board board = new Board();
+		BoardDrawer d = new BoardDrawer();
+		int depth = 7;
+		GameStrategy strat = new AlfaBetaStrategy(depth);
 		
 		//CLI program setup
 		if (args.length > 0) {
@@ -54,13 +56,21 @@ public class Main {
 			}
 		}
 		
+		Instant timeKeeping = Instant.now();
+		//if (now().isAfter(plus(timeLimit, timeKeeping())) panic = true;
+		strat.setTimeLimit(timeLimit);
+		
+		
+		
 		int passCounter = 0;
 
 		//interactive mode
 		if (playMode.equals("play")) {
 			System.out.print("\nHi, and welcome to Reversi. You are playing as " +
 					((playerColour == 'b') ? "black (X)" : "white (O)") + ", and I am playing as " +
-					((playerColour == 'w') ? "black (X)" : "white (O)") + ".\n\n");
+					((playerColour == 'w') ? "black (X)" : "white (O)") + ".");
+			System.out.print("I will be using the MinMax strategy" + ((strategy.equals("ab")) ? " with Alpha-Beta pruning. " : ". "));
+			System.out.println("My move consideration time limit is " + timeLimit + " ms. Let's play: \n");
 			System.out.println(d.draw(board));
 
 			boolean incorrect = false;
@@ -82,12 +92,14 @@ public class Main {
 					
 					System.out.print("  ");
 					try {
+						Instant moveStartTime = Instant.now();
 						Scanner scan = new Scanner(System.in);
 						String playerMove = scan.nextLine().toUpperCase();
 						String move = translateInputFormat(playerMove);
 						String tempTurn = board.whosTurn();
 						board.play(move);
-						System.out.println("  " + tempTurn + " plays " + playerMove + ":");
+						System.out.println("  " + tempTurn + " plays " + playerMove + " (took " 
+						+ ChronoUnit.MILLIS.between(moveStartTime, Instant.now()) + " milliseconds):");
 						passCounter = 0;
 						incorrect = false;
 					}
@@ -99,13 +111,15 @@ public class Main {
 
 				//computer's turn
 				else {
-					String nextMove = strat.nextMove(board);
+					Instant moveStartTime = Instant.now();
+					String nextMove = strat.nextMove(board, moveStartTime);
 					String tempTurn = board.whosTurn();
 					board.play(nextMove);
 					int letter = (int) (nextMove.charAt(1) + 16);
 					char c1 = (char) (letter);
 					char c2 = nextMove.charAt(0);
-					System.out.println("  " + tempTurn + " plays " + c1 + c2 + ":");
+					System.out.println("  " + tempTurn + " plays " + c1 + c2 + " (took " 
+					+ ChronoUnit.MILLIS.between(moveStartTime, Instant.now()) +" milliseconds):");
 					passCounter = 0;
 				}
 
@@ -127,7 +141,7 @@ public class Main {
 
 			
 			while (board.getNbrOfDiscs() < 64 && passCounter < 2) {
-
+				String tempTurn = board.whosTurn();
 
 				if (board.terminalState()) {
 					System.out.println(board.whosTurn() + " is forced to pass.\n");
@@ -136,9 +150,11 @@ public class Main {
 				}
 
 				else {
-					String nextMove = strat.nextMove(board);
-					System.out.println(nextMove);
+					Instant moveStartTime = Instant.now();
+					String nextMove = strat.nextMove(board, moveStartTime);
 					board.play(nextMove);
+					System.out.println("  " + tempTurn + " plays " + ((int) (nextMove.charAt(1) + 16)) + nextMove.charAt(0) 
+					+ " (took " + ChronoUnit.MILLIS.between(moveStartTime, Instant.now()) +" milliseconds):");
 					System.out.println(d.draw(board));
 					passCounter = 0;
 				}
