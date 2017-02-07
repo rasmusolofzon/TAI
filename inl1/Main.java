@@ -57,10 +57,7 @@ public class Main {
 		}
 		
 		Instant timeKeeping = Instant.now();
-		//if (now().isAfter(plus(timeLimit, timeKeeping())) panic = true;
 		strat.setTimeLimit(timeLimit);
-		
-		
 		
 		int passCounter = 0;
 
