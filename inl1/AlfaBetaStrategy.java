@@ -12,6 +12,11 @@ public class AlfaBetaStrategy implements GameStrategy {
 	
 	public void setTimeLimit(int millis) {
 		timeLimit = millis;
+		cutoffDepth = 5;
+		if (millis < 1500) cutoffDepth = 6;
+		else if (millis < 4000) cutoffDepth = 7;
+		else if (millis < 7000) cutoffDepth = 8;
+		else cutoffDepth = 9;
 	}
 	
 	public String nextMove (Board board, Instant timeKeeping) {

@@ -17,7 +17,7 @@ public class Main {
 		
 		Board board = new Board();
 		BoardDrawer d = new BoardDrawer();
-		int depth = 7;
+		int depth = 9;
 		GameStrategy strat = new AlfaBetaStrategy(depth);
 		
 		//CLI program setup
@@ -63,10 +63,11 @@ public class Main {
 
 		//interactive mode
 		if (playMode.equals("play")) {
-			System.out.print("\nHi, and welcome to Reversi. You are playing as " +
+			System.out.println("\nHi, and welcome to Reversi. You are playing as " +
 					((playerColour == 'b') ? "black (X)" : "white (O)") + ", and I am playing as " +
 					((playerColour == 'w') ? "black (X)" : "white (O)") + ".");
-			System.out.print("I will be using the MinMax strategy" + ((strategy.equals("ab")) ? " with Alpha-Beta pruning. " : ". "));
+			System.out.println("I will be using the MinMax strategy" + ((strategy.equals("ab")) ? " with Alpha-Beta pruning. " : ". "));
+			System.out.println("Enter move as number and letter, for example '3b'.");
 			System.out.println("My move consideration time limit is " + timeLimit + " ms. Let's play: \n");
 			System.out.println(d.draw(board));
 
@@ -150,7 +151,8 @@ public class Main {
 					Instant moveStartTime = Instant.now();
 					String nextMove = strat.nextMove(board, moveStartTime);
 					board.play(nextMove);
-					System.out.println("  " + tempTurn + " plays " + ((int) (nextMove.charAt(1) + 16)) + nextMove.charAt(0) 
+
+					System.out.println("  " + tempTurn + " plays " + ((char) ((int) (nextMove.charAt(1) + 16))) + nextMove.charAt(0) 
 					+ " (took " + ChronoUnit.MILLIS.between(moveStartTime, Instant.now()) +" milliseconds):");
 					System.out.println(d.draw(board));
 					passCounter = 0;
@@ -176,10 +178,10 @@ public class Main {
 			int number = Character.getNumericValue(playerMove.charAt(0));
 			if (number >= 1 || number <= 8) {
 				for (int i=0; i<8; i++) {
-					if (playerMove.charAt(0) == translationTable[i]) {
-						int letter = (int) playerMove.charAt(0) - 16;
+					if (playerMove.charAt(1) == translationTable[i]) {
+						int letter = (int) playerMove.charAt(1) - 16;
 						StringBuilder move = new StringBuilder("");
-						move.append(playerMove.charAt(1));
+						move.append(playerMove.charAt(0));
 						move.append((char)(letter));
 						return move.toString();
 					}
