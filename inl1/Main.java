@@ -9,7 +9,7 @@ public class Main {
 
 		Board board = new Board();
 		BoardDrawer d = new BoardDrawer();
-		int depth = 8;
+		int depth = 6;
 		GameStrategy strat = new AlfaBetaStrategy(depth);
 
 		char playerColour = 'b';
