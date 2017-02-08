@@ -24,7 +24,6 @@ public class Main {
 		if (args.length > 0) {
 			try {
 				for (int i=0;i<args.length;i++) {
-					System.out.println(args[i]);
 					if (args[i].charAt(0) == '-') {
 						timeLimit = Integer.parseInt(args[i].substring(2, args[i].length()));
 					} 
@@ -51,7 +50,7 @@ public class Main {
 				System.err.println("Argument #2: '-tXXXX' to specify the time limit. XXXX is measured in milliseconds. Default is 10000 ms.");
 				System.err.println("Argument #3: 'play' to play against the program, 'auto' to let the program play itself. Default is 'auto'.");
 				System.err.println("Argument #4: 'mm' to use MinMax strategy, 'ab' to add alpha-beta pruning. Default is 'ab'.");
-				System.err.println("Example: Reversi w -t10500 mm play\n");
+				System.err.println("Example: java Main w -t10500 mm play\n");
 				System.exit(1);
 			}
 		}
@@ -65,7 +64,7 @@ public class Main {
 		if (playMode.equals("play")) {
 			System.out.print("\nHi, and welcome to Reversi. You are playing as " +
 					((playerColour == 'b') ? "black (X)" : "white (O)") + ", and I am playing as " +
-					((playerColour == 'w') ? "black (X)" : "white (O)") + ".");
+					((playerColour == 'w') ? "black (X)" : "white (O)") + ". ");
 			System.out.print("I will be using the MinMax strategy" + ((strategy.equals("ab")) ? " with Alpha-Beta pruning. " : ". "));
 			System.out.println("My move consideration time limit is " + timeLimit + " ms. Let's play: \n");
 			System.out.println(d.draw(board));
