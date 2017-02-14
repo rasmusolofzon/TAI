@@ -1,9 +1,10 @@
 import sys
+import matplotlib.pyplot as plt
+import numpy as np
 
 ####################################################
 #functions
 
-#
 def gradientDescent(w0, w1, data, alfa, epsilon):
 
 	oldSSE = SSE(w0,w1,data)
@@ -16,8 +17,8 @@ def gradientDescent(w0, w1, data, alfa, epsilon):
 		a+=1
 		oldSSE = SSE(w0,w1,data)
 		w0, w1 = gradient(w0,w1,data,alfa)
-		print(w0)
-		print(w1)
+		#print(w0)
+		#print(w1)
 	print("number of iterations: " + str(a))
 	return (w0,w1)
 
@@ -46,8 +47,6 @@ def SSE(w0,w1,values):
 		sse += (y - (w1 * x + w0)) ** 2
 	return sse
 	
-
-
 #################################################
 #the script
 
@@ -60,8 +59,7 @@ for line in data:
 	values[0].append(line.split()[0])
 	values[1].append(line.split()[1])
 
-#print(values)
-
+print(values)
 
 w0 = 0
 w1 = 0
@@ -71,5 +69,16 @@ epsilon = 0.000000000001
 W = gradientDescent(w0,w1,values,alfa,epsilon)
 print("w0: " + str(W[0]))
 print("w1: " + str(W[1]))
+
+#t = np.arange(0, 80000, 1000)
+plt.axis([0, 1.1, 0, 0.1])
+#points data[0], data[1]
+plt.plot(np.array(values[0]), np.array(values[1]), 'o')
+plt.plot([0, 1], [W[0], W[1]+W[0]], '-')
+#""", linewidth=3, color='blue'"""
+#plt.xlabel('# of words')
+#plt.ylabel('# of a\'s')
+plt.savefig(sys.argv[1][:-4] + ".png")
+plt.show()
 
 
