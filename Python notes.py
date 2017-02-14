@@ -28,7 +28,9 @@ false_bool = False
 
 ####################################################
 #lists
-[1,2,3,"hello", [1,2],2.0] #this is a list. Lists are mutable
+list = [1,2,3,"hello", [1,2],2.0] #this is a list. Lists are mutable
+list.append(x)
+list.insert(i, x)
 
 #tuples
 (1,2,3,"hello", 2.0) #this is a tuple. Tuples are immutable (nice!)
