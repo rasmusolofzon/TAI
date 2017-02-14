@@ -3,13 +3,13 @@
 #this is a comment
 
 """This is a 
-multiline comment"""
+multiline comment""" #These need to be indented right!
 
 
 ####################################################
 #variable assignment, types, data structures
 
-#variable names are case sensitive, captial letters can be used 
+#variable names are case sensitive, capital letters can be used 
 
 
 #int
@@ -28,7 +28,6 @@ false_bool = False
 
 ####################################################
 #lists
-
 [1,2,3,"hello", [1,2],2.0] #this is a list. Lists are mutable
 
 #tuples
@@ -79,8 +78,14 @@ a = 25%4 #modulus, like in Java
 #exponents / power off
  a = 2**10  #this gives 2 to the power of 10 (2^10)
 
+#floor division
+a = 9//2 #this gives a = 4
+
 #comparisons exactly like Java
 <,>,<=,>=,!=,==
+
+#logic operators
+and, or, not 
 
 #####################################################
 #import commands
@@ -111,14 +116,34 @@ def square(x):
 	return x*x
 
 ####################################################
+#file handling
+f = open("filename.txt", 'r')
+	#'r' for read mode (is default, no 2nd parameter means 'r')
+	#'w' for write mode
+	#'r+'' for both read and write (might not work?)
+	#'a' for append mode
+
+f.read(size) 	#returns size, in either string or bytes
+				#(size < 0 or size = null) => whole file is read (even if larger than machine's memory)
+				#(size >= 0) => size bytes are returned
 
 ####################################################
 
 ####################################################
 
 ####################################################
-#lambdas
+#lambdas - function as parameter
+#example:
+def filter(whatToFilter, list):
+#anrop:
+filter(lambda x: x % 2 == 0, [1, 2, 3, 4, 5, 6]) #ger jämna tal
 
+####################################################
+#CLI arguments
+import sys
+
+sys.argv #is the list of CLI args
+len(sys.argv) #is the number of CLI args
 
 ####################################################
 #reserved words (keywords)
