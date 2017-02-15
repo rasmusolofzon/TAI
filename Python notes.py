@@ -52,6 +52,12 @@ s = 'the horse\'s ass' #fungerar. "\" används som escape character
 #strängar är indexerade på samma sätt som i Java
 c = "cats"[0] #the variable c gets the value "c"
 
+#substrings är sjukt smidiga:
+print(c[1:]) => 'ats'
+print(c[:3]) => 'cat'
+print(c[:-2]) => 'ts'
+print(c[1:-1]) => 'at'
+
 #string functions:
  	
 ####################################################
