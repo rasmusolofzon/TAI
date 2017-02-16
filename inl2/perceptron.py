@@ -17,7 +17,7 @@ def perceptronLearningRule(w, x, y, alfa):
 	return wUpdated
 
 def shuffleTwo(x, y):
-	savedSeed = np.random.randint(0, sys.maxsize)
+	savedSeed = np.random.randint(0, 10000)
 	np.random.seed(savedSeed)
 	np.random.shuffle(x)
 	np.random.seed(savedSeed)
@@ -74,12 +74,12 @@ x, y = shuffleTwo(x, y)
 print(x)
 print(y)
 
-"""for i in range(rows):
-	w = perceptronLearningRule(w, x[i], y[i], alfa)
-	alfa = 1000 / (1000+i)"""
-
-while :
+for i in range(rows):
 	w = perceptronLearningRule(w, x[i], y[i], alfa)
 	alfa = 1000 / (1000+i)
 
+"""while :
+	w = perceptronLearningRule(w, x[i], y[i], alfa)
+	alfa = 1000 / (1000+i)
+"""
 print(w)
