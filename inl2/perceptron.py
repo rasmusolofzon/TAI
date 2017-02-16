@@ -1,7 +1,7 @@
 import numpy as np 
 import sys
 
-def treshold(w, x):
+def threshold(w, x):
 	z = 0
 	for i in range(len(w)):
 		z += w[i] * x[i]
@@ -13,7 +13,7 @@ def treshold(w, x):
 def perceptronLearningRule(w, x, y, alfa):
 	wUpdated = [0 for i in range(len(w))]
 	for i in range(len(w)):
-		wUpdated[i] = w[i] + alfa*(y-treshold(w, x))*x[i]
+		wUpdated[i] = w[i] + alfa*(y-threshold(w, x))*x[i]
 	return wUpdated
 
 def shuffleTwo(x, y):
@@ -74,7 +74,7 @@ print("stopcondition is " + str(int(rows*0.05)))
 
 while not stopcondition:
 	w = perceptronLearningRule(w, x[indexSet], y[indexSet], alfa)
-	if (treshold(w, x[indexSet]) != y[indexSet]):
+	if (threshold(w, x[indexSet]) != y[indexSet]):
 		nbrMisclassified+=1
 	alfa = 1000 / (1000+(indexSet+epochs*rows))
 	indexSet+=1
