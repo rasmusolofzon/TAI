@@ -17,18 +17,12 @@ def perceptronLearningRule(w, x, y, alfa):
 	return wUpdated
 
 def shuffleTwo(x, y):
-	savedSeed = np.random.randint(0, sys.maxsize-1)
+	savedSeed = np.random.randint(0, 200000)
 	np.random.seed(savedSeed)
 	np.random.shuffle(x)
 	np.random.seed(savedSeed)
 	np.random.shuffle(y)
 	return (x, y)
-
-"""TODO
-	implementera 'minsta felklassificerade exempel'-funktionaliteten aka stopcondition
-	dela upp ett dataset i flera och använd som träningsset och valideringsset
-	del 3
-"""
 
 #load file
 fileName = sys.argv[1]
