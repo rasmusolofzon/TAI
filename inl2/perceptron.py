@@ -17,7 +17,7 @@ def perceptronLearningRule(w, x, y, alfa):
 	return wUpdated
 
 def shuffleTwo(x, y):
-	savedSeed = np.random.randint(0, 10000)
+	savedSeed = np.random.randint(0, sys.maxsize-1)
 	np.random.seed(savedSeed)
 	np.random.shuffle(x)
 	np.random.seed(savedSeed)
@@ -53,33 +53,48 @@ for i in range(rows):
 
 #assumes positive  values
 maxVal = np.amax(x)
-print(maxVal)
 if (maxVal>1):
 	scalefactor = 1/maxVal
 	for i in range(rows):
 		for j in range(1,cols):
 			x[i,j] = x[i][j] * scalefactor
 maxVal = np.amax(x)
-print(maxVal)
-print(x)
-print(y)
-
 
 w = [0 for i in range(cols)]
 w[0] = 1
-print(w)
 
 alfa = 1
 x, y = shuffleTwo(x, y)
-print(x)
-print(y)
 
-for i in range(rows):
-	w = perceptronLearningRule(w, x[i], y[i], alfa)
-	alfa = 1000 / (1000+i)
 
-"""while :
+"""for i in range(rows):
 	w = perceptronLearningRule(w, x[i], y[i], alfa)
-	alfa = 1000 / (1000+i)
-"""
+	alfa = 1000 / (1000+i)"""
+
+indexSet = 0
+stopcondition = False
+nbrMisclassified = 0
+epochs = 0
+wSaved = []
+print("stopcondition is " + str(int(rows*0.05)))
+
+while not stopcondition:
+	w = perceptronLearningRule(w, x[indexSet], y[indexSet], alfa)
+	if (treshold(w, x[indexSet]) != y[indexSet]):
+		nbrMisclassified+=1
+	alfa = 1000 / (1000+(indexSet+epochs*rows))
+	indexSet+=1
+
+	if indexSet%rows==0 and indexSet!=0:
+		print (str(nbrMisclassified) + " wrong in epoch " + str(epochs))
+		indexSet = 0
+		shuffleTwo(x, y)
+		print(alfa, w)
+		if (nbrMisclassified <= int(rows*0.05)):
+			stopcondition = True
+			print("Success!")
+		nbrMisclassified = 0
+		epochs+=1
+
+
 print(w)
