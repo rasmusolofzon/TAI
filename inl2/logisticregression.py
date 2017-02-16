@@ -16,7 +16,7 @@ def SSE(w, x, y):
 		sse += (y[i] - wx) ** 2
 	return sse
 
-def treshold(w, x):
+def threshold(w, x):
 	z = 0
 	for i in range(len(w)):
 		z += w[i] * x[i]
@@ -24,7 +24,7 @@ def treshold(w, x):
 
 def perceptronLearningRule(w, x, y, alfa):
 	wUpdated = [0 for i in range(len(w))]
-	hw = treshold(w, x)
+	hw = threshold(w, x)
 	for i in range(len(w)):
 		wUpdated[i] = w[i] + alfa*(y-hw)*hw*(1-hw)*x[i]
 	return wUpdated
@@ -92,6 +92,10 @@ while (abs(SSE(w, x, y)-oldSSE) > epsilon):
 		#print(alfa, w)
 		epochs+=1
 
+
+
+
+
 if (len(w) == 3):
 	fig = plt.figure()
 	#ax = fig.gca(projection='3d')
@@ -105,7 +109,7 @@ if (len(w) == 3):
 	zplot = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
 	for i in range(len(x1plot[0])):
 		for j in range(len(x1plot[0])):
-			a = treshold(w, [1, x1plot[i][j], x2plot[i][j]])
+			a = threshold(w, [1, x1plot[i][j], x2plot[i][j]])
 			#print(a)
 			#R = np.sin(x1plot**2 + x2plot**2)
 			zplot[i].append(a)
@@ -114,7 +118,7 @@ if (len(w) == 3):
 	xVals = [[]]
 	yVals = [[]]
 	for i in range(29):
-		zVals[0].append(treshold(w,x[i]))
+		zVals[0].append(threshold(w,x[i]))
 		xVals.append(x[i][1])
 		yVals.append(x[i][2])
 	"""
