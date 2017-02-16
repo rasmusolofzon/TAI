@@ -101,7 +101,7 @@ if (len(w) == 3):
 	#ax = fig.gca(projection='3d')
 	ax = fig.add_subplot(111,projection='3d')
 	x1plot = np.arange(0, 1, 0.05)
-	x2plot = np.arange(0, 1, 0.05)
+	x2plot = np.arange(0, 0.1, 0.005)
 	
 	x1plot, x2plot = np.meshgrid(x1plot, x2plot)
 	print(x1plot)
@@ -131,9 +131,6 @@ if (len(w) == 3):
 
 ##############################################
 #plotting points
-xs = 0.5
-ys = 0.5
-zs = 0.5
 c = 'r'
 m = 'o'
 #ax.scatter(xs, ys, zs, c=c, marker=m)
@@ -143,9 +140,9 @@ for i in range(len(y)):
 	x1 = [x[i][1]]
 	y1 = [x[i][2]]
 	if (y[i] == 1):
-		ax.plot(x1,y1,treshold(w,x[i]),'r',marker=m)
+		ax.plot(x1,y1,threshold(w,x[i]),'r',marker=m)
 	if (y[i] == 0):
-		ax.plot(x1,y1,treshold(w,x[i]),'b',marker=m)
+		ax.plot(x1,y1,threshold(w,x[i]),'b',marker=m)
 
 ax.set_xlabel('X Label')
 ax.set_ylabel('Y Label')
