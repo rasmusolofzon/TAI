@@ -96,20 +96,20 @@ if (len(w) == 3):
 	fig = plt.figure()
 	#ax = fig.gca(projection='3d')
 	ax = fig.add_subplot(111,projection='3d')
-	x1plot = np.arange(0, 1, 0.01)
-	x2plot = np.arange(0, 1, 0.01)
+	x1plot = np.arange(0, 1, 0.05)
+	x2plot = np.arange(0, 1, 0.05)
 	
 	x1plot, x2plot = np.meshgrid(x1plot, x2plot)
 	print(x1plot)
 	
-	zplot = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
+	zplot = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
 	for i in range(len(x1plot[0])):
 		for j in range(len(x1plot[0])):
 			a = treshold(w, [1, x1plot[i][j], x2plot[i][j]])
 			#print(a)
 			#R = np.sin(x1plot**2 + x2plot**2)
 			zplot[i].append(a)
-	"""
+
 	zVals = [[]]
 	xVals = [[]]
 	yVals = [[]]
@@ -117,11 +117,40 @@ if (len(w) == 3):
 		zVals[0].append(treshold(w,x[i]))
 		xVals.append(x[i][1])
 		yVals.append(x[i][2])
-	"""
-	print(zplot)
+
+	#print(zplot)
 	surf = ax.plot_surface(x1plot,x2plot, zplot,cmap=cm.coolwarm,linewidth=0, antialiased=False)
+	# Customize the z axis.
+	#ax.set_zlim(0, 1.01)
+	#ax.zaxis.set_major_locator(LinearLocator(10))
+	#ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+
+##############################################
+#plotting points
+xs = 0.5
+ys = 0.5
+zs = 0.5
+c = 'r'
+m = 'o'
+#ax.scatter(xs, ys, zs, c=c, marker=m)
+#ax.scatter(xs, ys, zs, c=c, marker=m)
+
+for i in range(len(y)):
+	x1 = [x[i][1]]
+	y1 = [x[i][2]]
+	if (y[i] == 1):
+		ax.plot(x1,y1,treshold(w,x[i]),'r',marker=m)
+	if (y[i] == 0):
+		ax.plot(x1,y1,treshold(w,x[i]),'b',marker=m)
+
+ax.set_xlabel('X Label')
+ax.set_ylabel('Y Label')
+ax.set_zlabel('Z Label')
+
+# Add a color bar which maps values to colors.
+fig.colorbar(surf, shrink=0.5, aspect=5)
 	#surf = ax.plot_surface(xVals,yVals,zVals,cmap=cm.coolwarm,linewidth=0, antialiased=False)
-	plt.show()
+plt.show()
 	
 print("Success!")
 print(w)
