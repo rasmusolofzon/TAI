@@ -9,8 +9,6 @@ def gradientDescent(w0, w1, data, alfa, epsilon):
 
 	oldSSE = SSE(w0,w1,data)
 	w0,w1 = gradient(w0,w1,data,alfa)
-	print(w0)
-	print(w1)
 	a = 0
 
 	while (abs(SSE(w0,w1,data)-oldSSE) > epsilon):
@@ -56,8 +54,6 @@ values = [[], []]
 for line in data:
 	values[0].append(line.split()[0])
 	values[1].append(line.split()[1])
-
-print(values)
 
 w0 = 0
 w1 = 0
