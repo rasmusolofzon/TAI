@@ -17,8 +17,6 @@ def gradientDescent(w0, w1, data, alfa, epsilon):
 		a+=1
 		oldSSE = SSE(w0,w1,data)
 		w0, w1 = gradient(w0,w1,data,alfa)
-		#print(w0)
-		#print(w1)
 	print("number of iterations: " + str(a))
 	return (w0,w1)
 
