@@ -1,4 +1,4 @@
-f = open("french.txt")
+f = open("datasets/french.txt")
 data = f.readlines()
 french = [[], []]
 
@@ -24,7 +24,7 @@ for value in french[1]:
 	french[1][counter] = float(value) * sfx
 	counter = counter+1
 
-fnew = open("french_scaled.txt", 'w')
+fnew = open("datasets/french_scaled.txt", 'w')
 
 for i in range(len(french[0])):
 	fnew.write(str(french[0][i]) + " " + str(french[1][i]) + "\n")
@@ -34,7 +34,7 @@ fnew.close()
 #fnew = open("french_scaled.txt", 'r')
 #print(fnew.readlines())
 
-f = open("english.txt")
+f = open("datasets/english.txt")
 data = f.readlines()
 english = [[], []]
 
@@ -58,7 +58,7 @@ for value in english[1]:
 	english[1][counter] = float(value) * sfx
 	counter = counter+1
 
-fnew = open("english_scaled.txt", 'w')
+fnew = open("datasets/english_scaled.txt", 'w')
 
 for i in range(len(english[0])):
 	fnew.write(str(english[0][i]) + " " + str(english[1][i]) + "\n")
