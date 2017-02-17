@@ -37,7 +37,7 @@ def shuffleTwo(x, y):
 	np.random.shuffle(y)
 	return (x, y)
 
-#load file
+#load file and puts in computable format in two matrices
 fileName = sys.argv[1]
 f = open(fileName, "r")
 data = f.readlines()
@@ -45,7 +45,7 @@ rows = len(data)
 cols = len(data[0].split())
 
 x = np.zeros(shape=(rows,cols))
-y = [0] * rows #np.zeros(shape=(rows,1))
+y = [0] * rows
 
 for i in range(rows):
 	row = data[i].split()
@@ -58,7 +58,7 @@ for i in range(rows):
 			a = a[2:]
 			x[i,j] = float(a)
 
-#assumes positive  values
+#Scaling. assumes positive values.
 maxVal = np.amax(x)
 if (maxVal>1):
 	scalefactor = 1/maxVal
@@ -67,19 +67,20 @@ if (maxVal>1):
 			x[i,j] = x[i][j] * scalefactor
 maxVal = np.amax(x)
 
-w = [0 for i in range(cols)]
 
+#set inital values
+w = [0 for i in range(cols)]
 x, y = shuffleTwo(x, y)
 indexSet = 0
 epochs = 0
 alfa = 1
 epsilon = 0.001
 oldSSE = SSE(w, x, y)
-print(oldSSE)
 w = perceptronLearningRule(w, x[indexSet], y[indexSet], alfa)
 indexSet+=1
 alfa = 1000 / (1000 + indexSet)
 
+#loop that runs until change of sse is lower than epsilon
 while (abs(SSE(w, x, y)-oldSSE) > epsilon):
 	oldSSE = SSE(w, x, y)
 	w = perceptronLearningRule(w, x[indexSet], y[indexSet], alfa)
@@ -92,28 +93,29 @@ while (abs(SSE(w, x, y)-oldSSE) > epsilon):
 		#print(alfa, w)
 		epochs+=1
 
+print("Success!")
+print(w)
 
 
+############################################
+#if the data has two attributes (1 1:... 2:...)
+#we plot the data and the dividing plane in 3d space
+#This is the case for the language test data (lanugage_perceptron.txt)
+#the plane is hardcoded to give a good view of the language data,
+#and will probably work poorly with an arbitrary set of data
 
-
+#plotting plane
 if (len(w) == 3):
 	fig = plt.figure()
-	#ax = fig.gca(projection='3d')
 	ax = fig.add_subplot(111,projection='3d')
-	x1plot = np.arange(0, 1, 0.01)
-	x2plot = np.arange(0, 1, 0.01)
-	
+	x1plot = np.arange(0, 1, 0.05)
+	x2plot = np.arange(0, 0.1, 0.005)
 	x1plot, x2plot = np.meshgrid(x1plot, x2plot)
-	print(x1plot)
-	
-	zplot = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
+	zplot = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
 	for i in range(len(x1plot[0])):
 		for j in range(len(x1plot[0])):
 			a = threshold(w, [1, x1plot[i][j], x2plot[i][j]])
-			#print(a)
-			#R = np.sin(x1plot**2 + x2plot**2)
 			zplot[i].append(a)
-	"""
 	zVals = [[]]
 	xVals = [[]]
 	yVals = [[]]
@@ -121,11 +123,26 @@ if (len(w) == 3):
 		zVals[0].append(threshold(w,x[i]))
 		xVals.append(x[i][1])
 		yVals.append(x[i][2])
-	"""
-	print(zplot)
+
 	surf = ax.plot_surface(x1plot,x2plot, zplot,cmap=cm.coolwarm,linewidth=0, antialiased=False)
-	#surf = ax.plot_surface(xVals,yVals,zVals,cmap=cm.coolwarm,linewidth=0, antialiased=False)
+	ax.zaxis.set_major_locator(LinearLocator(10))
+	ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+
+#plotting points
+	c = 'r'
+	m = 'o'
+	for i in range(len(y)):
+		x1 = [x[i][1]]
+		y1 = [x[i][2]]
+		if (y[i] == 1):
+			#french data points are red
+			ax.plot(x1,y1,threshold(w,x[i]),'r',marker=m)
+			#english data points are red
+		if (y[i] == 0):
+			ax.plot(x1,y1,threshold(w,x[i]),'b',marker=m)
+	#setting up plot
+	ax.set_xlabel('X Label')
+	ax.set_ylabel('Y Label')
+	ax.set_zlabel('Z Label')
+	fig.colorbar(surf, shrink=0.5, aspect=5)
 	plt.show()
-	
-print("Success!")
-print(w)

@@ -60,11 +60,6 @@ w[0] = 1
 alfa = 1
 x, y = shuffleTwo(x, y)
 
-
-"""for i in range(rows):
-	w = perceptronLearningRule(w, x[i], y[i], alfa)
-	alfa = 1000 / (1000+i)"""
-
 indexSet = 0
 stopcondition = False
 nbrMisclassified = 0

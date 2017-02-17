@@ -1,5 +1,5 @@
 import sys
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 
 ####################################################
@@ -17,8 +17,6 @@ def gradientDescent(w0, w1, data, alfa, epsilon):
 		a+=1
 		oldSSE = SSE(w0,w1,data)
 		w0, w1 = gradient(w0,w1,data,alfa)
-		#print(w0)
-		#print(w1)
 	print("number of iterations: " + str(a))
 	return (w0,w1)
 
@@ -69,16 +67,17 @@ epsilon = 0.000000000001
 W = gradientDescent(w0,w1,values,alfa,epsilon)
 print("w0: " + str(W[0]))
 print("w1: " + str(W[1]))
-
+"""
 #t = np.arange(0, 80000, 1000)
 plt.axis([0, 1.1, 0, 0.1])
 #points data[0], data[1]
 plt.plot(np.array(values[0]), np.array(values[1]), 'o')
 plt.plot([0, 1], [W[0], W[1]+W[0]], '-')
-#""", linewidth=3, color='blue'"""
+"""
+"""linewidth=3, color='blue'
 #plt.xlabel('# of words')
 #plt.ylabel('# of a\'s')
 plt.savefig(sys.argv[1][:-4] + ".png")
 plt.show()
-
+"""
 
