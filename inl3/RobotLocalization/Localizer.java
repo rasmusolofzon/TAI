@@ -1,11 +1,16 @@
+import java.util.ArrayList;
 
 public class Localizer implements EstimatorInterface {
 	private int rows, cols, head;
+	private int robot[];
 
-	public Localizer( int rows, int cols, int head) {
+	public Localizer(int rows, int cols, int head) {
 		this.rows = rows;
 		this.cols = cols;
 		this.head = head;
+		
+		robot = new int[]{(int)(Math.random()*rows)+1, (int)(Math.random()*cols)+1, (int)(Math.random()*head)+1};
+		
 	}
 
 	/*
@@ -14,15 +19,15 @@ public class Localizer implements EstimatorInterface {
 	 * four headings at maximum in a useful way.
 	 */
 	public int getNumRows() {
-		return 0;
+		return rows;
 	}
 	
 	public int getNumCols() {
-		return 0;
+		return cols;
 	}
 	
 	public int getNumHead() {
-		return 0;
+		return head;
 	}
 	
 	/*
@@ -31,7 +36,7 @@ public class Localizer implements EstimatorInterface {
 	 * after the method has been called once.
 	 */
 	public void update() {
-		
+		walk(getLegalHeading());
 	}
 	
 	/*
@@ -39,7 +44,7 @@ public class Localizer implements EstimatorInterface {
 	 * of the robot as (x,y)-pair.
 	 */
 	public int[] getCurrentTruePosition() {
-		return null;
+		return new int[]{robot[0], robot[1]};
 	}
 	
 	/*
@@ -77,6 +82,33 @@ public class Localizer implements EstimatorInterface {
 	public double getTProb( int x, int y, int h, int nX, int nY, int nH) {
 		return 0;
 	}
-
+	
+	private void walk(int newh) {
+		if (newh == 1) robot[0]--;
+		else if (newh == 2) robot[1]++;
+		else if (newh == 3) robot[0]++;
+		else if (newh == 4) robot[1]--;
+		
+		robot[2] = newh;
+	}
+	
+	private int getLegalHeading() {
+		boolean[] possMoves = possibleMoves(robot[0], robot[1]);
+		int h = robot[2]; 
+		int newh = robot[2];
+		
+		if (!possMoves[h-1] || (possMoves[h-1] && Math.random() < 0.3)) {
+			ArrayList<Integer> trueHeadings = new ArrayList<Integer>();
+			for (int i=0;i<4;i++) {
+				if (possMoves[i]) trueHeadings.add(i+1);
+			}
+			newh = trueHeadings.get((int)Math.random()*trueHeadings.size()+1);
+		}
+		return newh;
+	}
+	
+	public boolean[] possibleMoves(int x, int y) {
+		return new boolean[]{((x-1)<=0)?false:true, ((y+1)>cols)?false:true, ((x+1)>rows)?false:true, ((y-1)<=0)?false:true};
+	}
 
 }
