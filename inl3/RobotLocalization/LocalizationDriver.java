@@ -1,6 +1,3 @@
-package control;
-
-import view.*;
 
 public class LocalizationDriver extends Thread {
 	

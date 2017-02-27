@@ -1,6 +1,3 @@
-package model;
-
-import control.EstimatorInterface;
 
 public class DummyLocalizer implements EstimatorInterface {
 		

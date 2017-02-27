@@ -1,7 +1,3 @@
-package control;
-
-import model.DummyLocalizer;
-import view.RobotLocalizationViewer;
 
 public class Main {
 	/*
@@ -12,7 +8,7 @@ public class Main {
 	public static void main( String[] args) {
 		
 		/*
-		 * generate you own localiser / estimator wrapper here to plug it into the 
+		 * generate your own localiser / estimator wrapper here to plug it into the 
 		 * graphics class.
 		 */
 		EstimatorInterface l = new DummyLocalizer( 4, 4, 4);

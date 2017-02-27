@@ -1,8 +1,17 @@
-package model;
-
-public class Localizer implements EstimatorInterface {
 
 
+/*
+ * This interface provides the graphics class (RobotLocalizationViewer) with the 
+ * necessary access points to the data it wants to display.
+ * If you want to use the viewer, have some class implement this interface, which 
+ * you could see as a wrapper to your internal model for the transition and sensor 
+ * matrices as well as the probability distribution over the possible positions
+ * 
+ * The viewer assumes a MxN-grid and in each field (m,n) the robot can have four 
+ * different headings. Your implementation of this interface needs hence to provide 
+ * the requested data in relation to this assumption!
+ */
+public interface EstimatorInterface {
 
 	/*
 	 * return the number of assumed rows, columns and possible headings for the grid
@@ -53,6 +62,5 @@ public class Localizer implements EstimatorInterface {
 	 * i = (x, y, h) to pose j = (nX, nY, nH)
 	 */	
 	public double getTProb( int x, int y, int h, int nX, int nY, int nH);
-
 
 }
