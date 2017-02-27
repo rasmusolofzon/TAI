@@ -5,6 +5,9 @@ public class Main {
 	 * ...
 	 */
 	
+
+	//run with following command:
+	//java -classpath .;Jama-1.0.3.jar Main
 	public static void main( String[] args) {
 		
 		/*
