@@ -1,17 +1,19 @@
 import java.util.ArrayList;
-
+import Jama.*;
 public class Localizer implements EstimatorInterface {
 	private int rows, cols, head;
 	private int robot[];
-
+	private Matrix tMat;
+	private Matrix oMat;
 
 	public Localizer(int rows, int cols, int head) {
 		this.rows = rows;
 		this.cols = cols;
 		this.head = head;
+		int s = rows*cols*4;
+		tMat = new Matrix(s,s,1000.0/(s*s));
+		oMat = new Matrix(s,s,1.0/(s*s));
 
-		
-		//checked for correct assignment
 		robot = new int[]{(int) (Math.random()*rows), (int) (Math.random()*cols), (int) (Math.random()*head)};
 	}
 
@@ -29,7 +31,7 @@ public class Localizer implements EstimatorInterface {
 	}
 	
 	public int getNumHead() {
-		return head;
+		return head+1;
 	}
 	
 	/*
@@ -77,6 +79,7 @@ public class Localizer implements EstimatorInterface {
 	 * view somewhat unclear.
 	 */
 	public double getCurrentProb( int x, int y) {
+
 		return 0;
 	}
 
@@ -96,14 +99,16 @@ public class Localizer implements EstimatorInterface {
 	 * i = (x, y, h) to pose j = (nX, nY, nH)
 	 */	
 	public double getTProb( int x, int y, int h, int nX, int nY, int nH) {
-		return 0;
+		int i = x*rows + y*cols + h;
+		int j = nX*rows + nY*cols + nH;
+		return tMat.get(i,j);
 	}
 	
 	private void walk(int newh) {
-		if (newh == 1) robot[0]--;
-		else if (newh == 2) robot[1]++;
-		else if (newh == 3) robot[0]++;
-		else if (newh == 4) robot[1]--;
+		if (newh == 0) robot[0]--;
+		else if (newh == 1) robot[1]++;
+		else if (newh == 2) robot[0]++;
+		else if (newh == 3) robot[1]--;
 		
 		robot[2] = newh;
 	}
@@ -118,10 +123,10 @@ public class Localizer implements EstimatorInterface {
 		int h = robot[2]; 
 		int newh = robot[2];
 		
-		if (!possMoves[h-1] || (possMoves[h-1] && Math.random() < 0.3)) {
+		if (!possMoves[h] || (possMoves[h] && Math.random() < 0.3)) {
 			ArrayList<Integer> trueHeadings = new ArrayList<Integer>();
 			for (int i=0;i<4;i++) {
-				if (possMoves[i]) trueHeadings.add(i+1);
+				if (possMoves[i]) trueHeadings.add(i);
 			}
 			newh = trueHeadings.get((int) (Math.random()*trueHeadings.size()));
 		}
