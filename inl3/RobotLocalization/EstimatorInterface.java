@@ -46,7 +46,7 @@ public interface EstimatorInterface {
 	 * (x,y) in the grid. The different headings are not considered, as it makes the 
 	 * view somewhat unclear.
 	 */
-	public double getCurrentProb( int x, int y);
+	public double getCurrentProb(int x, int y);
 
 	/*
 	 * returns the probability entry of the sensor matrices O to get reading r corresponding 
@@ -55,7 +55,7 @@ public interface EstimatorInterface {
 	 * positions (x, y)). If rX or rY (or both) are -1, the method should return the probability for 
 	 * the sensor to return "nothing" given the robot is in position (x, y).
 	 */
-	public double getOrXY( int rX, int rY, int x, int y);
+	public double getOrXY(int rX, int rY, int x, int y);
 
 	/*
 	 * returns the probability entry (Tij) of the transition matrix T to go from pose 

@@ -104,8 +104,11 @@ public class Localizer implements EstimatorInterface {
 		return tMat.get(i,j);
 	}
 	
+	/*
+	 * walk the robot one step in direction newh
+	 */
 	private void walk(int newh) {
-		if (newh == 0) robot[0]--;
+		if 		(newh == 0) robot[0]--;
 		else if (newh == 1) robot[1]++;
 		else if (newh == 2) robot[0]++;
 		else if (newh == 3) robot[1]--;
@@ -118,6 +121,9 @@ public class Localizer implements EstimatorInterface {
 		return true;
 	}
 	
+	/*
+	 * returns a heading randomly chosen from the true position's possible headings
+	 */
 	private int getLegalHeading() {
 		boolean[] possMoves = possibleMoves(robot[0], robot[1]);
 		int h = robot[2]; 
@@ -128,14 +134,18 @@ public class Localizer implements EstimatorInterface {
 			for (int i=0;i<4;i++) {
 				if (possMoves[i]) trueHeadings.add(i);
 			}
+
 			newh = trueHeadings.get((int) (Math.random()*trueHeadings.size()));
 		}
 		return newh;
 	}
 	
+	/*
+	 * returns a boolean vector with the headings it is possible to move in 
+	 * (i. e. no walls in that heading). [0] = N(orth), [1]=E, [2]=S, [3]=W
+	 */
 	private boolean[] possibleMoves(int x, int y) {
 		return new boolean[]{inGrid(x-1,y),inGrid(x,y+1),inGrid(x+1,y),inGrid(x,y-1)};
-		//return new boolean[]{((x-1)<=0)?false:true, ((y+1)>cols)?false:true, ((x+1)>rows)?false:true, ((y-1)<=0)?false:true};
 	}
 
 }

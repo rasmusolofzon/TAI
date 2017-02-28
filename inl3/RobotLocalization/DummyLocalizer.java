@@ -30,7 +30,6 @@ public class DummyLocalizer implements EstimatorInterface {
 		return 0.1;
 	}
 
-
 	public int[] getCurrentTruePosition() {
 		
 		int[] ret = new int[2];
