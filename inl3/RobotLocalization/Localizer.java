@@ -9,8 +9,8 @@ public class Localizer implements EstimatorInterface {
 		this.cols = cols;
 		this.head = head;
 		
-		robot = new int[]{(int)(Math.random()*rows)+1, (int)(Math.random()*cols)+1, (int)(Math.random()*head)+1};
-		
+		//checked for correct assignment
+		robot = new int[]{(int) (Math.random()*rows)+1, (int) (Math.random()*cols)+1, (int) (Math.random()*head)+1};
 	}
 
 	/*
@@ -52,7 +52,8 @@ public class Localizer implements EstimatorInterface {
 	 * after the simulation step 
 	 */
 	public int[] getCurrentReading() {
-		return null;
+		int[] ret = null;
+		return ret;
 	}
 	
 	/*
