@@ -20,10 +20,10 @@ public class RobotLocalizationViewer {
 	
 	public RobotLocalizationViewer( EstimatorInterface l) {
 		loc = l;
+
 		this.rows = loc.getNumRows();
 		this.cols = loc.getNumCols();
 		this.head = loc.getNumHead();
-		
 		runFlag = initFlag = false;
 		
 		sXCount = sYCount = 0;
@@ -211,11 +211,11 @@ public class RobotLocalizationViewer {
 			states[maxX][maxY][2].setBackground(Color.lightGray);
 			states[maxX][maxY][3].setBackground(Color.lightGray);
 		}
-			
-		states[tX][tY][4].setBackground(Color.black);
-		if( sX != -1)
-			states[sX][sY][4].setBackground(Color.cyan);
-		
+	
+		states[tX-1][tY-1][4].setBackground(Color.black);
+		if( sX != -1) {
+			states[sX-1][sY-1][4].setBackground(Color.cyan);
+		}
 				
 	}
 
