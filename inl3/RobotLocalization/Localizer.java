@@ -4,13 +4,15 @@ public class Localizer implements EstimatorInterface {
 	private int rows, cols, head;
 	private int robot[];
 
+
 	public Localizer(int rows, int cols, int head) {
 		this.rows = rows;
 		this.cols = cols;
 		this.head = head;
+
 		
 		//checked for correct assignment
-		robot = new int[]{(int) (Math.random()*rows)+1, (int) (Math.random()*cols)+1, (int) (Math.random()*head)+1};
+		robot = new int[]{(int) (Math.random()*rows), (int) (Math.random()*cols), (int) (Math.random()*head)};
 	}
 
 	/*
@@ -52,10 +54,23 @@ public class Localizer implements EstimatorInterface {
 	 * after the simulation step 
 	 */
 	public int[] getCurrentReading() {
-		int[] ret = null;
-		return ret;
+		double r = Math.random();
+		int[] reading = getCurrentTruePosition();
+		if (r<0.1) return reading;
+		else if (0.10<r && r<=0.15 && inGrid(reading[0]-1,reading[1]+1)) return new int[]{reading[0]-1,reading[1]+1};
+		else if (0.15<r && r<=0.20 && inGrid(reading[0]+1,reading[1]+1)) return new int[]{reading[0]+1,reading[1]+1};
+		else if (0.20<r && r<=0.25 && inGrid(reading[0],reading[1]-1)) return new int[]{reading[0],reading[1]-1};
+		else if (0.25<r && r<=0.275 && inGrid(reading[0]-2,reading[1]+2)) return new int[]{reading[0]-2,reading[1]+2};
+		else if (0.275<r && r<=0.30 && inGrid(reading[0]-1,reading[1]+2)) return new int[]{reading[0]-1,reading[1]+2};
+		else if (0.30<r && r<=0.325 && inGrid(reading[0],reading[1]+2)) return new int[]{reading[0],reading[1]+2};
+		else if (0.325<r && r<=0.35 && inGrid(reading[0]+2,reading[1]+2)) return new int[]{reading[0]+2,reading[1]+2};
+		else if (0.35<r && r<=0.375 && inGrid(reading[0]+2,reading[1])) return new int[]{reading[0]+2,reading[1]};
+		else if (0.375<r && r<=0.40 && inGrid(reading[0]-1,reading[1]-2)) return new int[]{reading[0]-1,reading[1]-2};
+
+		reading = null;
+		return reading;
 	}
-	
+
 	/*
 	 * returns the currently estimated (summed) probability for the robot to be in position
 	 * (x,y) in the grid. The different headings are not considered, as it makes the 
@@ -92,6 +107,11 @@ public class Localizer implements EstimatorInterface {
 		
 		robot[2] = newh;
 	}
+
+	private boolean inGrid (int x, int y) {
+		if (x<0 || x>=rows || y<0 || y>=cols) return false;
+		return true;
+	}
 	
 	private int getLegalHeading() {
 		boolean[] possMoves = possibleMoves(robot[0], robot[1]);
@@ -103,13 +123,14 @@ public class Localizer implements EstimatorInterface {
 			for (int i=0;i<4;i++) {
 				if (possMoves[i]) trueHeadings.add(i+1);
 			}
-			newh = trueHeadings.get((int)Math.random()*trueHeadings.size()+1);
+			newh = trueHeadings.get((int) (Math.random()*trueHeadings.size()));
 		}
 		return newh;
 	}
 	
-	public boolean[] possibleMoves(int x, int y) {
-		return new boolean[]{((x-1)<=0)?false:true, ((y+1)>cols)?false:true, ((x+1)>rows)?false:true, ((y-1)<=0)?false:true};
+	private boolean[] possibleMoves(int x, int y) {
+		return new boolean[]{inGrid(x-1,y),inGrid(x,y+1),inGrid(x+1,y),inGrid(x,y-1)};
+		//return new boolean[]{((x-1)<=0)?false:true, ((y+1)>cols)?false:true, ((x+1)>rows)?false:true, ((y-1)<=0)?false:true};
 	}
 
 }
