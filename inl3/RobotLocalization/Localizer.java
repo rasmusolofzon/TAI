@@ -5,6 +5,7 @@ public class Localizer implements EstimatorInterface {
 	private int robot[];
 	private Matrix tMat;
 	private Matrix oMat;
+	private Matrix fVect;
 
 	public Localizer(int rows, int cols, int head) {
 		this.rows = rows;
@@ -13,6 +14,7 @@ public class Localizer implements EstimatorInterface {
 		int s = rows*cols*4;
 		tMat = new Matrix(s,s,1000.0/(s*s));
 		oMat = new Matrix(s,s,1.0/(s*s));
+		fVect = new Matrix(s,1,1.0/(s*s));
 
 		robot = new int[]{(int) (Math.random()*rows), (int) (Math.random()*cols), (int) (Math.random()*head)};
 	}
@@ -23,15 +25,15 @@ public class Localizer implements EstimatorInterface {
 	 * four headings at maximum in a useful way.
 	 */
 	public int getNumRows() {
-		return rows;
+		return rows; //takes 1-n, not 0-(n-1)
 	}
 	
 	public int getNumCols() {
-		return cols;
+		return cols; //takes 1-n, not 0-(n-1)
 	}
 	
 	public int getNumHead() {
-		return head+1;
+		return head; //takes 1-n, not 0-(n-1)
 	}
 	
 	/*
@@ -45,10 +47,10 @@ public class Localizer implements EstimatorInterface {
 	
 	/*
 	 * returns the currently known true position i.e., after one simulation step
-	 * of the robot as (x,y)-pair.
+	 * of the robot as (x,y)-pair. 
 	 */
 	public int[] getCurrentTruePosition() {
-		return new int[]{robot[0], robot[1]};
+		return new int[]{robot[0], robot[1]}; //Takes index 0-(n-1).
 	}
 	
 	/*
@@ -79,8 +81,12 @@ public class Localizer implements EstimatorInterface {
 	 * view somewhat unclear.
 	 */
 	public double getCurrentProb( int x, int y) {
-
-		return 0;
+		
+		double prob = 0.0;
+		for (int i=((x*cols+y)*4); i<4; i++) {
+			prob += fVect.get(i,0);
+		}
+		return prob;
 	}
 
 	/*
@@ -101,6 +107,7 @@ public class Localizer implements EstimatorInterface {
 	public double getTProb( int x, int y, int h, int nX, int nY, int nH) {
 		int i = x*rows + y*cols + h;
 		int j = nX*rows + nY*cols + nH;
+		//Jama matrix uses java indexing (0,1,2....n-1)!
 		return tMat.get(i,j);
 	}
 	
@@ -138,4 +145,29 @@ public class Localizer implements EstimatorInterface {
 		//return new boolean[]{((x-1)<=0)?false:true, ((y+1)>cols)?false:true, ((x+1)>rows)?false:true, ((y-1)<=0)?false:true};
 	}
 
+	//scales matrix so elements sums to 1
+	private void scale(Matrix m) {
+		double sum = 0;
+
+		for (int i=0; i<m.getRowDimension(); i++) {
+			for (int j=0; j<m.getColumnDimension(); j++) {
+				sum += m.get(i,j);
+			}
+		}
+		double alpha = 1.0/sum;
+		m.times(alpha);
+	}
+
+	//returns alpha scalar, scaling matrix to 1
+	private double alpha(Matrix m) {
+		double sum = 0;
+
+		for (int i=0; i<m.getRowDimension(); i++) {
+			for (int j=0; j<m.getColumnDimension(); j++) {
+				sum += m.get(i,j);
+			}
+		}
+		double alpha = 1.0/sum;
+		return alpha;
+	}
 }
