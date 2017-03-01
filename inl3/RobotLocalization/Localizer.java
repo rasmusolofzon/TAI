@@ -12,9 +12,9 @@ public class Localizer implements EstimatorInterface {
 		this.cols = cols;
 		this.head = head;
 		int s = rows*cols*4;
-		tMat = new Matrix(s,s,1000.0/(s*s));
+		tMat = new Matrix(s,s,1.0/(s*s));
 		oMat = new Matrix(s,s,1.0/(s*s));
-		fVect = new Matrix(s,1,1.0/(s*s));
+		fVect = new Matrix(s,1,1.0/s);
 
 		robot = new int[]{(int) (Math.random()*rows), (int) (Math.random()*cols), (int) (Math.random()*head)};
 	}
@@ -81,9 +81,9 @@ public class Localizer implements EstimatorInterface {
 	 * view somewhat unclear.
 	 */
 	public double getCurrentProb( int x, int y) {
-		
 		double prob = 0.0;
-		for (int i=((x*cols+y)*4); i<4; i++) {
+		int start = x*cols+y*4;
+		for (int i=start; i<start+4; i++) {
 			prob += fVect.get(i,0);
 		}
 		return prob;
@@ -158,7 +158,6 @@ public class Localizer implements EstimatorInterface {
 	//scales matrix so elements sums to 1
 	private void scale(Matrix m) {
 		double sum = 0;
-
 		for (int i=0; i<m.getRowDimension(); i++) {
 			for (int j=0; j<m.getColumnDimension(); j++) {
 				sum += m.get(i,j);
@@ -171,7 +170,6 @@ public class Localizer implements EstimatorInterface {
 	//returns alpha scalar, scaling matrix to 1
 	private double alpha(Matrix m) {
 		double sum = 0;
-
 		for (int i=0; i<m.getRowDimension(); i++) {
 			for (int j=0; j<m.getColumnDimension(); j++) {
 				sum += m.get(i,j);
