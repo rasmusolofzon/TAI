@@ -6,6 +6,8 @@ public class Localizer implements EstimatorInterface {
 	private Matrix tMat;
 	private Matrix oMat;
 	private Matrix fVect;
+	private final double S1PROB = 0.05;
+	private final double S2PROB = 0.025;
 
 	public Localizer(int rows, int cols, int head) {
 		this.rows = rows;
@@ -13,7 +15,7 @@ public class Localizer implements EstimatorInterface {
 		this.head = head;
 		int s = rows*cols*4;
 		tMat = new Matrix(s,s,1.0/(s*s));
-		oMat = new Matrix(s,s,1.0/(s*s));
+		oMat = new Matrix(s,s);
 		fVect = new Matrix(s,1,1.0/s);
 
 		robot = new int[]{(int) (Math.random()*rows), (int) (Math.random()*cols), (int) (Math.random()*head)};
@@ -42,7 +44,11 @@ public class Localizer implements EstimatorInterface {
 	 * after the method has been called once.
 	 */
 	public void update() {
-		walk(getLegalHeading());
+		walk(getLegalHeading()); //walk robot one step, t+1
+
+		//sensor reading int[] {x, y}, t+1
+		updateO();
+		updateF(); //update f vector
 	}
 	
 	/*
@@ -61,14 +67,14 @@ public class Localizer implements EstimatorInterface {
 		double r = Math.random();
 		int[] reading = getCurrentTruePosition();
 		if (r<0.1) return reading;
-		else if (0.10<r && r<=0.15 && inGrid(reading[0]-1,reading[1]+1)) return new int[]{reading[0]-1,reading[1]+1};
-		else if (0.15<r && r<=0.20 && inGrid(reading[0]+1,reading[1]+1)) return new int[]{reading[0]+1,reading[1]+1};
-		else if (0.20<r && r<=0.25 && inGrid(reading[0],reading[1]-1)) return new int[]{reading[0],reading[1]-1};
+		else if (0.10<r && r<=0.15  && inGrid(reading[0]-1,reading[1]+1)) return new int[]{reading[0]-1,reading[1]+1};
+		else if (0.15<r && r<=0.20  && inGrid(reading[0]+1,reading[1]+1)) return new int[]{reading[0]+1,reading[1]+1};
+		else if (0.20<r && r<=0.25  && inGrid(reading[0],reading[1]-1))   return new int[]{reading[0],reading[1]-1};
 		else if (0.25<r && r<=0.275 && inGrid(reading[0]-2,reading[1]+2)) return new int[]{reading[0]-2,reading[1]+2};
 		else if (0.275<r && r<=0.30 && inGrid(reading[0]-1,reading[1]+2)) return new int[]{reading[0]-1,reading[1]+2};
-		else if (0.30<r && r<=0.325 && inGrid(reading[0],reading[1]+2)) return new int[]{reading[0],reading[1]+2};
+		else if (0.30<r && r<=0.325 && inGrid(reading[0],reading[1]+2))   return new int[]{reading[0],reading[1]+2};
 		else if (0.325<r && r<=0.35 && inGrid(reading[0]+2,reading[1]+2)) return new int[]{reading[0]+2,reading[1]+2};
-		else if (0.35<r && r<=0.375 && inGrid(reading[0]+2,reading[1])) return new int[]{reading[0]+2,reading[1]};
+		else if (0.35<r && r<=0.375 && inGrid(reading[0]+2,reading[1]))   return new int[]{reading[0]+2,reading[1]};
 		else if (0.375<r && r<=0.40 && inGrid(reading[0]-1,reading[1]-2)) return new int[]{reading[0]-1,reading[1]-2};
 
 		reading = null;
@@ -95,6 +101,7 @@ public class Localizer implements EstimatorInterface {
 	 * care of potentially necessary transformations from states i = <x, y, h> to 
 	 * positions (x, y)). If rX or rY (or both) are -1, the method should return the probability for 
 	 * the sensor to return "nothing" given the robot is in position (x, y).
+	 * e_t = (rX, rY), X_t = i = (x, y), P(e_t | X_t)
 	 */
 	public double getOrXY( int rX, int rY, int x, int y) {
 		return 0;
@@ -177,5 +184,48 @@ public class Localizer implements EstimatorInterface {
 		}
 		double alpha = 1.0/sum;
 		return alpha;
+	}
+
+	private void updateF() {
+		fVect = scale( 
+			oMat.times( 
+				tMat.transpose().times( 
+					fVect)));
+	}
+
+	private void updateO(int x, int y, int h) {
+		oMat = new Matrix(rows*cols*4, rows*cols*4);
+		int[] xDelta = new int[]{-2, -2, -1, 0, 0, 0, 1, 1, 1, 2};
+		int[] yDelta = new int[]{-2, 0, -1, -2, 0, 1, -2, -1, 2, -2};
+		double[] prob = new double[]{S2PROB, S2PROB, S1PROB, S2PROB, 0.1, S1PROB, S2PROB, S1PROB, S2PROB, S2PROB};
+
+		if (x != -1 && y != -1) {
+			for (int lap=0;lap<xDelta.length;lap++) {		//absolute, heading-independent version
+				if (inGrid(x+xDelta[lap], y+yDelta[lap])) {
+					int start = (x+xDelta[lap])*cols+(y+yDelta[lap])*4;
+					for (int i=start; i<start+4; i++) {
+						oMat.set(i,i,prob[lap]/4);
+					}
+				}
+			}
+		} else {
+			/*for (int r=0;r<rows;r++) {
+				for (int c=0;c<cols;c++) {
+					if ((r==0&&(c==0||c==cols-1) || (r==rows-1&&(c==0||c==cols-1)))) { //corners
+
+					} else if ((r==1&&c==0) || (r==rows-2&&c==cols-1) || (r==rows-2&&(c==0||c==cols-1))) { 
+
+					} else if (c==0||c==cols-1)
+				}
+			}*/
+			for (int lap=0;lap<xDelta.length;lap++) {		//temporary
+				if (inGrid(x+xDelta[lap], y+yDelta[lap])) {
+					int start = (x+xDelta[lap])*cols+(y+yDelta[lap])*4;
+					for (int i=start; i<start+4; i++) {
+						oMat.set(i,i,1/(rows*cols));
+					}
+				}
+			}
+		}
 	}
 }
