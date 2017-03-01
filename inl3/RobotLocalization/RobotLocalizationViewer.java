@@ -215,12 +215,10 @@ public class RobotLocalizationViewer {
 		states[tX][tY][4].setBackground(Color.black);
 		if( sX != -1) {
 			states[sX][sY][4].setBackground(Color.cyan);
-		}
-				
+		}			
 	}
 
 	public void updateTransitionView() {
-
 		int x, y, h;
 		
 		for( x=0; x<rows; x++) {
