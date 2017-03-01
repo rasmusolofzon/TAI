@@ -195,6 +195,39 @@ public class Localizer implements EstimatorInterface {
 
 	private void updateO(int x, int y, int h) {
 		oMat = new Matrix(rows*cols*4, rows*cols*4);
+		int[] xDelta = new int[]{-2,-2,-2,-2,-2,-1,-1,-1,-1,-1,0,0,0,0,0,1,1,1,1,1,2,2,2,2,2};
+		int[] yDelta = new int[]{-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2};
+		double[] prob = new double[]{S2PROB,S2PROB,S2PROB,S2PROB,S2PROB,
+									S2PROB,S1PROB,S1PROB,S1PROB,S2PROB,
+									S2PROB,S1PROB,0.1,S1PROB,S2PROB,
+									S2PROB,S1PROB,S1PROB,S1PROB,S2PROB,
+									S2PROB,S2PROB,S2PROB,S2PROB,S2PROB};
+		if (x != -1 && y != -1) {
+			for (int lap=0;lap<xDelta.length;lap++) {		
+				if (inGrid(x+xDelta[lap], y+yDelta[lap])) {
+					int start = (x+xDelta[lap])*cols+(y+yDelta[lap])*4;
+					for (int i=start; i<start+4; i++) {
+						oMat.set(i,i,prob[lap]/4);
+					}
+				}
+			}
+		}
+		//uses method nothingProbability to determine probability
+		else {
+			for (int i=0; i<rows; i++) {
+				for (int j=0; j<cols; c++) {
+					int start = (i*cols+j)*4;
+					for (int s=start; s<start+4; i++) {
+						double nonProb = nothingProbability(i,j);
+						oMat.set(s,s,nonProb/4);
+					}
+				}
+			}
+		}
+
+
+		/*
+		//old code
 		int[] xDelta = new int[]{-2, -2, -1, 0, 0, 0, 1, 1, 1, 2};
 		int[] yDelta = new int[]{-2, 0, -1, -2, 0, 1, -2, -1, 2, -2};
 		double[] prob = new double[]{S2PROB, S2PROB, S1PROB, S2PROB, 0.1, S1PROB, S2PROB, S1PROB, S2PROB, S2PROB};
@@ -209,7 +242,8 @@ public class Localizer implements EstimatorInterface {
 				}
 			}
 		} else {
-			/*for (int r=0;r<rows;r++) {
+
+			for (int r=0;r<rows;r++) {
 				for (int c=0;c<cols;c++) {
 					if ((r==0&&(c==0||c==cols-1) || (r==rows-1&&(c==0||c==cols-1)))) { //corners
 
@@ -217,7 +251,7 @@ public class Localizer implements EstimatorInterface {
 
 					} else if (c==0||c==cols-1)
 				}
-			}*/
+			}
 			for (int lap=0;lap<xDelta.length;lap++) {		//temporary
 				if (inGrid(x+xDelta[lap], y+yDelta[lap])) {
 					int start = (x+xDelta[lap])*cols+(y+yDelta[lap])*4;
@@ -226,6 +260,33 @@ public class Localizer implements EstimatorInterface {
 					}
 				}
 			}
-		}
+		}*/
+	}
+
+	/*
+	*this method returns probability that the robot is
+	*in a square, given that the sensor returns nothing.
+	*/
+	private double nothingProbability (int x, int y) {
+	//perhaps define in constructor so no calcs needs to be made each time
+	//must be in this order, this should make it correct for all n*m matrices??
+	if ( wdX(x) >= 2 && wdY(y) >= 2 ) prob = (1-0.1-0.05*8-0.025*16); //middle
+
+	if (wallDist(x)==0 && walldistY(y)==0) prob = (1-0.1-0.05*3-0.025*5); //corner
+	if ((wallDist(x)==0 && walldistY(y)==1) || (wallDist(x)==1 && walldistY(y)==0)) prob = (1-0.1-0.05*5-0.025*6); //next to corner
+	if (wallDist(x)==1 && walldistY(y)==1) prob = (1-0.1-0.05*8-0.025*7); //inner corner
+
+	if ((wallDist(x)==0 && walldistY(y)>=2) || (wallDist(x)>=2 && walldistY(y)==0)) prob = (1-0.1-0.05*5-0.025*9); //top/bottom/left/right edge
+	if ((wallDist(x)==1 && walldistY(y)>=2) || (wallDist(x)>=2 && walldistY(y)==1)) prob = (1-0.1-0.05*8-0.025*11); //inner top/bottom/left/right edge
+
+
+	}
+
+	public int wallDistX (int x) {
+		return Math.min(rows-1-x,x);
+	}
+	
+	public int wallDistY (int y) {
+		return Math.min(cols-1-y,y);
 	}
 }
