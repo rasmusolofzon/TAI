@@ -5,11 +5,12 @@ public class Main {
 	 * ...
 	 */
 	
-
-	//run with following command:
+	//compile/run with:
+	//javac -classpath .;Jama-1.0.3.jar *.java
 	//java -classpath .;Jama-1.0.3.jar Main
+
 	public static void main( String[] args) {
-		
+
 		/*
 		 * generate your own localiser / estimator wrapper here to plug it into the 
 		 * graphics class.
@@ -17,11 +18,6 @@ public class Main {
 		EstimatorInterface l = new Localizer(4, 4, 4);
 
 		RobotLocalizationViewer viewer = new RobotLocalizationViewer(l);
-		//test for jama, clear later
-		//Matrix m = new Matrix(4,4,2);
-		//m.set(1,1,5);
-		//m.set(0,0,1);
-		//m.print(2,2);
 
 		/*
 		 * this thread controls the continuous update. If it is not started, 
