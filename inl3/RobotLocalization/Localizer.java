@@ -3,28 +3,84 @@ import Jama.*;
 public class Localizer implements EstimatorInterface {
 	private int rows, cols, head;
 	private int robot[];
-	private Matrix tMat;
-	private Matrix oMat;
-	private Matrix fVect;
+	private Matrix tMat, oMat, fVect;
 
-	//probability constants calculated beforehand
 	private final double S1PROB = 0.05, S2PROB = 0.025;
 	private final double MIDDLE = 0.1, CORNER = 0.625, INNERCORNER = 0.325,
 						NEXTTOCORNER = 0.5, EDGE = 0.425, INNEREDGE = 0.315;
-
-
 
 	public Localizer(int rows, int cols, int head) {
 		this.rows = rows;
 		this.cols = cols;
 		this.head = head;
 		int s = rows*cols*4;
-		tMat = new Matrix(s,s,1.0/(s*s));
+
+		//T-matrisen är konstant, men ska INTE initialiseras såhär
+		//Den ska innehålla de faktiska sannolikheterna att gå från ett state till ett annat
+		//dvs många av värden kommer vara noll.
+
+		tMat = createTmat(s);
 		oMat = new Matrix(s,s);
 		fVect = new Matrix(s,1,1.0/s);
-
 		robot = new int[]{(int) (Math.random()*rows), (int) (Math.random()*cols), (int) (Math.random()*head)};
 	}
+
+	//DOES NOT FUNCTION CORRECTLY
+	private Matrix createTmat (int s) {
+		System.out.println("rows: " + rows);
+		System.out.println("cols: " + cols);
+		Matrix t = new Matrix(s,s);
+		//we have rows, columns
+		for (int i=0; i<s; i++) {
+			System.out.println(i);
+			int square = i/4; //whole number division, gives us square number (row for row basis)
+			int heading = i%4; //modulus to get heading in square
+			System.out.println("square: " + square + " heading: " + heading);
+			int x = square/cols; //produces the row in our grid
+			int y = square%cols; //produces the col in our grid
+			boolean[] possMoves = possibleMoves(x,y);
+			System.out.println(x + "," + y);
+			double prob = 1.0;
+			System.out.println(possMoves[0] + " " + possMoves[1] + " " + possMoves[2] + " " + possMoves[3]);
+			if (possMoves[heading]) {
+				//set whichever state in my heading and direction to 0.7
+				//set others to proportional 0.3/avaliable 
+				switch (heading) {
+					case 0:
+						t.set(i,i-cols*4,0.7);
+						break;
+					case 1:
+						t.set(i,i+4,0.7);
+						break;
+					case 2:
+						t.set(i,i+cols*4,0.7);
+						break;
+					case 3:
+						t.set(i,i-4,0.7);
+						break;
+				}
+				possMoves[heading] = false;
+				prob = prob - 0.7;
+			}
+			//counting alternatives
+			int alternatives = 0;
+			for (int h=0; h<4; h++) {
+				if(possMoves[h]) {
+					alternatives++;
+				}
+			}
+			//dividing probability
+			prob = prob/alternatives;
+			//check these again
+			if (possMoves[0]) t.set(i,i-(cols*4-heading),prob);
+			if (possMoves[1]) t.set(i,i+(4+1-heading),prob);
+			if (possMoves[2]) t.set(i,i+(cols*4+2-heading),prob);
+			if (possMoves[3]) t.set(i,i-(4-3+heading),prob);	
+			}
+			t.print(2,2);
+			return t;
+		}
+
 
 	/*
 	 * return the number of assumed rows, columns and possible headings for the grid
@@ -72,14 +128,14 @@ public class Localizer implements EstimatorInterface {
 	 * after the simulation step 
 	 */
 
-	//needs testing
+	//tested, functions correctly. Probabilities are correct
 	 public int[] getCurrentReading() {
 		
 		int[] reading = getCurrentTruePosition();
 		int[] innerLapX = new int[]{-1,-1,-1,0,0,1,1,1};
 		int[] innerLapY = new int[]{-1,0,1,-1,1,-1,0,1};
-		int[] outerLapX = new int[]{-2,-2,-2,-2,-2,-1,-1,-1,-1,-1,0,0,0,0,0,1,1,1,1,1,2,2,2,2,2};
-		int[] outerLapY = new int[]{-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2};
+		int[] outerLapX = new int[]{-2,-2,-2,-2,-2,-1,-1,0,0,1,1,2,2,2,2,2};
+		int[] outerLapY = new int[]{-2,-1,0,1,2,-2,2,-2,2,-2,2,-2,-1,0,1,2};
 
 		int sRand = (int) (Math.random()*8);
 		int s2Rand = (int) (Math.random()*16);
@@ -89,7 +145,7 @@ public class Localizer implements EstimatorInterface {
 		int dY2 = outerLapY[s2Rand];
 
 		double r = Math.random();
-		if (r<0.1 &&inGrid(reading[0],reading[1])) return reading;
+		if (r<0.1 && inGrid(reading[0],reading[1])) return reading;
 		else if (0.1<=r && r<0.5 && inGrid(reading[0]+dX,reading[1]+dY)) return new int[]{reading[0]+dX,reading[1]+dY};
 		else if (0.5<=r && r<0.9 && inGrid(reading[0]+dX2, reading[1]+dY2)) return new int[]{reading[0]+dX2,reading[1]+dY2};
 
@@ -119,8 +175,15 @@ public class Localizer implements EstimatorInterface {
 	 * the sensor to return "nothing" given the robot is in position (x, y).
 	 * e_t = (rX, rY), X_t = i = (x, y), P(e_t | X_t)
 	 */
+	//might be wrong since it doesnt follow whatever she wrote above, but makes sense to me..
 	public double getOrXY( int rX, int rY, int x, int y) {
-		return 0;
+		if (rX == -1 || rY == -1) return nothingProbability(x,y);
+		if (rX==x && rY==y) return 0.1;
+		if ((Math.abs(rX-x) == 1 && Math.abs(rY-y) <= 1) || (Math.abs(rX-x) <= 1 && Math.abs(rY-y) == 1)) return 0.05;
+		if ((Math.abs(rX-x) == 2 && Math.abs(rY-y) <= 2) || (Math.abs(rX-x) <= 2 && Math.abs(rY-y) == 2)) return 0.025;
+		else {
+			return 0;
+		}
 	}
 
 	/*
@@ -139,7 +202,7 @@ public class Localizer implements EstimatorInterface {
 	 * returns a heading randomly chosen from the true position's possible headings
 	 */
 	private int getLegalHeading() {
-		boolean[] possMoves = possibleMoves(robot[0], robot[1]);
+		boolean[] possMoves = possibleMoves(robot[0],robot[1]);
 		int h = robot[2]; 
 		int newh = robot[2];
 		

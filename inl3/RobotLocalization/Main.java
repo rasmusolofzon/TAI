@@ -15,7 +15,13 @@ public class Main {
 		 * generate your own localiser / estimator wrapper here to plug it into the 
 		 * graphics class.
 		 */
-		EstimatorInterface l = new Localizer(4, 4, 4);
+		EstimatorInterface l;
+		if (args.length == 2) {
+			l = new Localizer(args[0], args[1], 4);	
+		}
+		else {
+			l = new Localizer(8, 8, 4);
+		}
 
 		RobotLocalizationViewer viewer = new RobotLocalizationViewer(l);
 
