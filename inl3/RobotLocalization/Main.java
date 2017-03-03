@@ -8,6 +8,8 @@ public class Main {
 	//compile/run with:
 	//javac -classpath .;Jama-1.0.3.jar *.java
 	//java -classpath .;Jama-1.0.3.jar Main
+	//javac -classpath .;Jama-1.0.3.jar *.java && java -classpath .;Jama-1.0.3.jar Main //windows version
+	//javac -classpath .:Jama-1.0.3.jar *.java && java -classpath .:Jama-1.0.3.jar Main //mac version
 
 	public static void main( String[] args) {
 
@@ -17,10 +19,10 @@ public class Main {
 		 */
 		EstimatorInterface l;
 		if (args.length == 2) {
-			l = new Localizer(args[0], args[1], 4);	
+			l = new Localizer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), 4);	
 		}
 		else {
-			l = new Localizer(8, 8, 4);
+			l = new Localizer(4, 4, 4);
 		}
 
 		RobotLocalizationViewer viewer = new RobotLocalizationViewer(l);

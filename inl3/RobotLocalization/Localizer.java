@@ -2,8 +2,10 @@ import java.util.ArrayList;
 import Jama.*;
 public class Localizer implements EstimatorInterface {
 	private int rows, cols, head;
-	private int robot[];
+	private int[] robot;
 	private Matrix tMat, oMat, fVect;
+	private int[] sensorReading;
+	private int counter = 0;
 
 	private final double S1PROB = 0.05, S2PROB = 0.025;
 	private final double MIDDLE = 0.1, CORNER = 0.625, INNERCORNER = 0.325,
@@ -23,25 +25,25 @@ public class Localizer implements EstimatorInterface {
 		oMat = new Matrix(s,s);
 		fVect = new Matrix(s,1,1.0/s);
 		robot = new int[]{(int) (Math.random()*rows), (int) (Math.random()*cols), (int) (Math.random()*head)};
+		sensorReading = new int[2];
 	}
 
-	//DOES NOT FUNCTION CORRECTLY
 	private Matrix createTmat (int s) {
 		System.out.println("rows: " + rows);
 		System.out.println("cols: " + cols);
 		Matrix t = new Matrix(s,s);
 		//we have rows, columns
 		for (int i=0; i<s; i++) {
-			System.out.println(i);
+			//System.out.println(i);
 			int square = i/4; //whole number division, gives us square number (row for row basis)
 			int heading = i%4; //modulus to get heading in square
-			System.out.println("square: " + square + " heading: " + heading);
+			//System.out.println("square: " + square + " heading: " + heading);
 			int x = square/cols; //produces the row in our grid
 			int y = square%cols; //produces the col in our grid
 			boolean[] possMoves = possibleMoves(x,y);
-			System.out.println(x + "," + y);
+			//System.out.println(x + "," + y);
 			double prob = 1.0;
-			System.out.println(possMoves[0] + " " + possMoves[1] + " " + possMoves[2] + " " + possMoves[3]);
+			//System.out.println(possMoves[0] + " " + possMoves[1] + " " + possMoves[2] + " " + possMoves[3]);
 			if (possMoves[heading]) {
 				//set whichever state in my heading and direction to 0.7
 				//set others to proportional 0.3/avaliable 
@@ -72,12 +74,12 @@ public class Localizer implements EstimatorInterface {
 			//dividing probability
 			prob = prob/alternatives;
 			//check these again
-			if (possMoves[0]) t.set(i,i-(cols*4-heading),prob);
+			if (possMoves[0]) t.set(i,i-(cols*4+heading),prob);
 			if (possMoves[1]) t.set(i,i+(4+1-heading),prob);
 			if (possMoves[2]) t.set(i,i+(cols*4+2-heading),prob);
 			if (possMoves[3]) t.set(i,i-(4-3+heading),prob);	
 			}
-			t.print(2,2);
+			//t.print(2,2);
 			return t;
 		}
 
@@ -105,14 +107,25 @@ public class Localizer implements EstimatorInterface {
 	 * after the method has been called once.
 	 */
 	public void update() {
+		System.out.println(counter);
 		//walk robot one step, t+1
 		walk(getLegalHeading()); 
+		System.out.println(counter);
 		//get sensor reading and update = matrix
-		int[] sVals = getCurrentReading();
-		if (sVals==null) updateO(-1,-1);
-		else updateO(sVals[0],sVals[1]);
+		sensorReading = calculateCurrentReading();
+		System.out.println(counter);
+		if (sensorReading==null) {
+			System.out.println(counter);
+			updateO(-1,-1);
+		}
+		else {
+			System.out.println(counter);
+			oMat = updateO(sensorReading[0],sensorReading[1]);
+		}
 		//update forward message
+		System.out.println(counter);
 		updateF(); 
+		counter++;
 	}
 	
 	/*
@@ -127,15 +140,16 @@ public class Localizer implements EstimatorInterface {
 	 * returns the currently available sensor reading obtained for the true position 
 	 * after the simulation step 
 	 */
-
-	//tested, functions correctly. Probabilities are correct
 	 public int[] getCurrentReading() {
+	 	return sensorReading;
+	 }
 		
+	public int[] calculateCurrentReading() {
 		int[] reading = getCurrentTruePosition();
-		int[] innerLapX = new int[]{-1,-1,-1,0,0,1,1,1};
-		int[] innerLapY = new int[]{-1,0,1,-1,1,-1,0,1};
-		int[] outerLapX = new int[]{-2,-2,-2,-2,-2,-1,-1,0,0,1,1,2,2,2,2,2};
-		int[] outerLapY = new int[]{-2,-1,0,1,2,-2,2,-2,2,-2,2,-2,-1,0,1,2};
+		int[] innerLapX = new int[]{-1,-1,-1, 0,0, 1,1,1};
+		int[] innerLapY = new int[]{-1, 0, 1,-1,1,-1,0,1};
+		int[] outerLapX = new int[]{-2,-2,-2,-2,-2,-1,-1, 0,0, 1,1, 2, 2,2,2,2};
+		int[] outerLapY = new int[]{-2,-1, 0, 1, 2,-2, 2,-2,2,-2,2,-2,-1,0,1,2};
 
 		int sRand = (int) (Math.random()*8);
 		int s2Rand = (int) (Math.random()*16);
@@ -160,7 +174,7 @@ public class Localizer implements EstimatorInterface {
 	 */
 	public double getCurrentProb( int x, int y) {
 		double prob = 0.0;
-		int start = x*cols+y*4;
+		int start = x*cols*4+y*4;
 		for (int i=start; i<start+4; i++) {
 			prob += fVect.get(i,0);
 		}
@@ -175,9 +189,15 @@ public class Localizer implements EstimatorInterface {
 	 * the sensor to return "nothing" given the robot is in position (x, y).
 	 * e_t = (rX, rY), X_t = i = (x, y), P(e_t | X_t)
 	 */
-	//might be wrong since it doesnt follow whatever she wrote above, but makes sense to me..
 	public double getOrXY( int rX, int rY, int x, int y) {
-		if (rX == -1 || rY == -1) return nothingProbability(x,y);
+		/*Matrix mat = updateO(x, y);
+		double prob = 0.0;
+		int start = rX*cols*4+rY*4;
+		for (int i=start;i<start+4;i++) {
+			prob += mat.get(i,i);
+		}
+		return prob;*/
+		if (rX == -1 || rY == -1) return nothingProbability(x, y);
 		if (rX==x && rY==y) return 0.1;
 		if ((Math.abs(rX-x) == 1 && Math.abs(rY-y) <= 1) || (Math.abs(rX-x) <= 1 && Math.abs(rY-y) == 1)) return 0.05;
 		if ((Math.abs(rX-x) == 2 && Math.abs(rY-y) <= 2) || (Math.abs(rX-x) <= 2 && Math.abs(rY-y) == 2)) return 0.025;
@@ -191,8 +211,8 @@ public class Localizer implements EstimatorInterface {
 	 * i = (x, y, h) to pose j = (nX, nY, nH)
 	 */	
 	public double getTProb( int x, int y, int h, int nX, int nY, int nH) {
-		int i = x*rows + y*cols + h;
-		int j = nX*rows + nY*cols + nH;
+		int i = x*rows*4 + y*4 + h;
+		int j = nX*rows*4 + nY*4 + nH;
 		//Jama matrix uses java indexing (0,1,2....n-1)!
 		return tMat.get(i,j);
 	}
@@ -232,8 +252,8 @@ public class Localizer implements EstimatorInterface {
 		fVect = scale(result);
 	}
 
-	private void updateO(int x, int y) {
-		oMat = new Matrix(rows*cols*4, rows*cols*4);
+	private Matrix updateO(int x, int y) {
+		Matrix mat = new Matrix(rows*cols*4, rows*cols*4);
 		int[] xDelta = new int[]{-2,-2,-2,-2,-2,-1,-1,-1,-1,-1,0,0,0,0,0,1,1,1,1,1,2,2,2,2,2};
 		int[] yDelta = new int[]{-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2};
 		double[] prob = new double[]{S2PROB,S2PROB,S2PROB,S2PROB,S2PROB,
@@ -241,12 +261,13 @@ public class Localizer implements EstimatorInterface {
 									S2PROB,S1PROB,0.1,S1PROB,S2PROB,
 									S2PROB,S1PROB,S1PROB,S1PROB,S2PROB,
 									S2PROB,S2PROB,S2PROB,S2PROB,S2PROB};
+
 		if (x != -1 && y != -1) {
 			for (int lap=0;lap<xDelta.length;lap++) {		
 				if (inGrid(x+xDelta[lap], y+yDelta[lap])) {
 					int start = (x+xDelta[lap])*cols+(y+yDelta[lap])*4;
 					for (int i=start; i<start+4; i++) {
-						oMat.set(i,i,prob[lap]/4);
+						mat.set(i,i,prob[lap]/4);
 					}
 				}
 			}
@@ -256,14 +277,15 @@ public class Localizer implements EstimatorInterface {
 			for (int i=0; i<rows; i++) {
 				for (int j=0; j<cols; j++) {
 					int start = (i*cols+j)*4;
-					for (int s=start; s<start+4; i++) {
+					for (int s=start; s<start+4; s++) {
 						double nonProb = nothingProbability(i,j);
-						oMat.set(s,s,nonProb/4);
+						mat.set(s,s,nonProb/4);
 					}
 				}
 			}
 		}
-		oMat = scale(oMat);
+		mat = scale(mat);
+		return mat;
 	}
 
 	/*
@@ -272,15 +294,15 @@ public class Localizer implements EstimatorInterface {
 	*/
 	//tested, functions correctly
 	private double nothingProbability (int x, int y) {
-	double prob = 0;
-	//there is a reason for not returning straight in if statement!
-	if ( wallDistX(x) >= 2 && wallDistY(y) >= 2) prob = MIDDLE;
-	if ( wallDistX(x) == 0 && wallDistY(y) == 0) prob = CORNER;
-	if ((wallDistX(x) == 0 && wallDistY(y) == 1) || (wallDistX(x) == 1 && wallDistY(y) == 0)) prob = NEXTTOCORNER;
-	if ( wallDistX(x) == 1 && wallDistY(y) == 1) prob = INNERCORNER; 
-	if ((wallDistX(x) == 0 && wallDistY(y) >= 2) || (wallDistX(x) >= 2 && wallDistY(y) == 0)) prob = EDGE;
-	if ((wallDistX(x) == 1 && wallDistY(y) >= 2) || (wallDistX(x) >= 2 && wallDistY(y) == 1)) prob = INNEREDGE;
-	return prob;
+		double prob = 0;
+		//there is a reason for not returning straight in if statement!
+		if ( wallDistX(x) >= 2 && wallDistY(y) >= 2) prob = MIDDLE;
+		if ( wallDistX(x) == 0 && wallDistY(y) == 0) prob = CORNER;
+		if ((wallDistX(x) == 0 && wallDistY(y) == 1) || (wallDistX(x) == 1 && wallDistY(y) == 0)) prob = NEXTTOCORNER;
+		if ( wallDistX(x) == 1 && wallDistY(y) == 1) prob = INNERCORNER; 
+		if ((wallDistX(x) == 0 && wallDistY(y) >= 2) || (wallDistX(x) >= 2 && wallDistY(y) == 0)) prob = EDGE;
+		if ((wallDistX(x) == 1 && wallDistY(y) >= 2) || (wallDistX(x) >= 2 && wallDistY(y) == 1)) prob = INNEREDGE;
+		return prob;
 	}
 
 	//tested, functions correctly
