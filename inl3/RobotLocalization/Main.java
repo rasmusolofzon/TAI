@@ -1,9 +1,6 @@
 import Jama.*;
+
 public class Main {
-	/*
-	 * build your own if you like, this is just an example of how to start the viewer
-	 * ...
-	 */
 	
 	//compile/run with:
 	//javac -classpath .;Jama-1.0.3.jar *.java

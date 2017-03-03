@@ -1,11 +1,11 @@
 import java.util.ArrayList;
 import Jama.*;
+
 public class Localizer implements EstimatorInterface {
-	private int rows, cols, head;
-	private int[] robot;
+	private int rows, cols, head, epochs, sensorFailings;
+	private int[] robot, sensorReading;
 	private Matrix tMat, oMat, fVect;
-	private int[] sensorReading;
-	private int counter = 0;
+	private double avgTrackingDiff;
 
 	private final double S1PROB = 0.05, S2PROB = 0.025;
 	private final double MIDDLE = 0.1, CORNER = 0.625, INNERCORNER = 0.325,
@@ -17,15 +17,14 @@ public class Localizer implements EstimatorInterface {
 		this.head = head;
 		int s = rows*cols*4;
 
-		//T-matrisen är konstant, men ska INTE initialiseras såhär
-		//Den ska innehålla de faktiska sannolikheterna att gå från ett state till ett annat
-		//dvs många av värden kommer vara noll.
-
 		tMat = createTmat(s);
-		oMat = new Matrix(s,s);
+		oMat = updateO(-1, -1);
 		fVect = new Matrix(s,1,1.0/s);
 		robot = new int[]{(int) (Math.random()*rows), (int) (Math.random()*cols), (int) (Math.random()*head)};
 		sensorReading = new int[2];
+		avgTrackingDiff = 0;
+		epochs = 0;
+		sensorFailings = 0;
 	}
 
 	private Matrix createTmat (int s) {
@@ -73,7 +72,7 @@ public class Localizer implements EstimatorInterface {
 			}
 			//dividing probability
 			prob = prob/alternatives;
-			//check these again
+
 			if (possMoves[0]) t.set(i,i-(cols*4+heading),prob);
 			if (possMoves[1]) t.set(i,i+(4+1-heading),prob);
 			if (possMoves[2]) t.set(i,i+(cols*4+2-heading),prob);
@@ -107,25 +106,26 @@ public class Localizer implements EstimatorInterface {
 	 * after the method has been called once.
 	 */
 	public void update() {
-		System.out.println(counter);
+		epochs++;
+		int[] pos = getCurrentTruePosition();
 		//walk robot one step, t+1
 		walk(getLegalHeading()); 
-		System.out.println(counter);
+
 		//get sensor reading and update = matrix
 		sensorReading = calculateCurrentReading();
-		System.out.println(counter);
-		if (sensorReading==null) {
-			System.out.println(counter);
-			updateO(-1,-1);
-		}
-		else {
-			System.out.println(counter);
-			oMat = updateO(sensorReading[0],sensorReading[1]);
-		}
+		if (sensorReading==null) oMat = updateO(-1,-1);
+		else oMat = updateO(sensorReading[0],sensorReading[1]);
+
 		//update forward message
-		System.out.println(counter);
-		updateF(); 
-		counter++;
+		updateF();
+
+		//calculating average difference in our guess from robot's real position
+		calculateAvgTrackingDiff(pos[0], pos[1], epochs);
+		
+		if (epochs == 20000) {
+			System.out.println("Epoch: " + epochs + ", Avg tracking difference: " + getAvgTrackingDiff() + ", world size: " + rows+"x"+cols);
+			System.exit(0);
+		}
 	}
 	
 	/*
@@ -159,8 +159,8 @@ public class Localizer implements EstimatorInterface {
 		int dY2 = outerLapY[s2Rand];
 
 		double r = Math.random();
-		if (r<0.1 && inGrid(reading[0],reading[1])) return reading;
-		else if (0.1<=r && r<0.5 && inGrid(reading[0]+dX,reading[1]+dY)) return new int[]{reading[0]+dX,reading[1]+dY};
+		if 		(r<0.1  && inGrid(reading[0],reading[1])) 					return reading;
+		else if (0.1<=r && r<0.5 && inGrid(reading[0]+dX,reading[1]+dY)) 	return new int[]{reading[0]+dX,reading[1]+dY};
 		else if (0.5<=r && r<0.9 && inGrid(reading[0]+dX2, reading[1]+dY2)) return new int[]{reading[0]+dX2,reading[1]+dY2};
 
 		reading = null;
@@ -190,27 +190,19 @@ public class Localizer implements EstimatorInterface {
 	 * e_t = (rX, rY), X_t = i = (x, y), P(e_t | X_t)
 	 */
 	public double getOrXY( int rX, int rY, int x, int y) {
-		/*Matrix mat = updateO(x, y);
+		Matrix mat = updateO(x, y);
 		double prob = 0.0;
 		int start = rX*cols*4+rY*4;
 		for (int i=start;i<start+4;i++) {
 			prob += mat.get(i,i);
 		}
-		return prob;*/
-		if (rX == -1 || rY == -1) return nothingProbability(x, y);
-		if (rX==x && rY==y) return 0.1;
-		if ((Math.abs(rX-x) == 1 && Math.abs(rY-y) <= 1) || (Math.abs(rX-x) <= 1 && Math.abs(rY-y) == 1)) return 0.05;
-		if ((Math.abs(rX-x) == 2 && Math.abs(rY-y) <= 2) || (Math.abs(rX-x) <= 2 && Math.abs(rY-y) == 2)) return 0.025;
-		else {
-			return 0;
-		}
+		return prob;
 	}
 
 	/*
 	 * returns the probability entry (Tij) of the transition matrix T to go from pose 
 	 * i = (x, y, h) to pose j = (nX, nY, nH)
-	 */	
-	//bättre, men fungerar inte 100%
+	 */
 	public double getTProb( int x, int y, int h, int nX, int nY, int nH) {
 		int i = (x*cols + y)*4 + h;
 		int j = (nX*cols + nY)*4 + nH;
@@ -219,7 +211,6 @@ public class Localizer implements EstimatorInterface {
 		return tMat.get(i,j);
 	}
 	
-	//####################################################################
 	/*
 	 * returns a heading randomly chosen from the true position's possible headings
 	 */
@@ -238,12 +229,35 @@ public class Localizer implements EstimatorInterface {
 		}
 		return newh;
 	}
+
+	public double getAvgTrackingDiff() {
+		return avgTrackingDiff;
+	}
+
+	//uses manhattan distance
+	private void calculateAvgTrackingDiff( int x, int y, int epoch) {
+		double maxVal = 0.0;
+		
+		int[] coords = new int[]{0, 0};
+
+		for (int i=0;i<rows;i++) {
+			for (int j=0;j<cols;j++) {
+				if (getCurrentProb(i, j) > maxVal) {
+					maxVal = getCurrentProb(i, j);
+					coords[0] = i;
+					coords[1] = j;
+				}
+			}
+		}
+		
+		avgTrackingDiff = (double) (avgTrackingDiff*(epoch-1) + (Math.abs(coords[0]-x) + Math.abs(coords[1]-y))) / epoch;
+	}
 	
 	/*
 	 * returns a boolean vector with the headings it is possible to move in 
-	 * (i. e. no walls in that heading). [0] = N(orth), [1]=E, [2]=S, [3]=W
+	 * (i. e. no walls in that heading). [0]=N(orth), [1]=E, [2]=S, [3]=W
 	 */
-	private boolean[] possibleMoves(int x, int y) {
+	private boolean[] possibleMoves( int x, int y) {
 		return new boolean[]{inGrid(x-1,y),inGrid(x,y+1),inGrid(x+1,y),inGrid(x,y-1)};
 	}
 
@@ -256,8 +270,8 @@ public class Localizer implements EstimatorInterface {
 
 	private Matrix updateO(int x, int y) {
 		Matrix mat = new Matrix(rows*cols*4, rows*cols*4);
-		int[] xDelta = new int[]{-2,-2,-2,-2,-2,-1,-1,-1,-1,-1,0,0,0,0,0,1,1,1,1,1,2,2,2,2,2};
-		int[] yDelta = new int[]{-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2};
+		int[] xDelta = new int[]{-2,-2,-2,-2,-2, -1,-1,-1,-1,-1, 0, 0,0,0,0,  1, 1,1,1,1,  2, 2,2,2,2};
+		int[] yDelta = new int[]{-2,-1, 0, 1, 2, -2,-1, 0, 1, 2,-2,-1,0,1,2, -2,-1,0,1,2, -2,-1,0,1,2};
 		double[] prob = new double[]{S2PROB,S2PROB,S2PROB,S2PROB,S2PROB,
 									S2PROB,S1PROB,S1PROB,S1PROB,S2PROB,
 									S2PROB,S1PROB,0.1,S1PROB,S2PROB,
@@ -267,7 +281,7 @@ public class Localizer implements EstimatorInterface {
 		if (x != -1 && y != -1) {
 			for (int lap=0;lap<xDelta.length;lap++) {		
 				if (inGrid(x+xDelta[lap], y+yDelta[lap])) {
-					int start = (x+xDelta[lap])*cols+(y+yDelta[lap])*4;
+					int start = (x+xDelta[lap])*cols*4+(y+yDelta[lap])*4;
 					for (int i=start; i<start+4; i++) {
 						mat.set(i,i,prob[lap]/4);
 					}
@@ -330,7 +344,7 @@ public class Localizer implements EstimatorInterface {
 		robot[2] = newh;
 	}
 
-	private boolean inGrid (int x, int y) {
+	private boolean inGrid( int x, int y) {
 		if (x<0 || x>=rows || y<0 || y>=cols) return false;
 		return true;
 	}

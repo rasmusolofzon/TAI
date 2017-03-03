@@ -17,7 +17,6 @@ public class RobotLocalizationViewer {
 	private EstimatorInterface loc;
 	private int sXCount, sYCount, tXCount, tYCount, tHCount;
 	private boolean runFlag, initFlag;
-	private int counter = 0;
 	
 	public RobotLocalizationViewer( EstimatorInterface l) {
 		loc = l;
@@ -148,22 +147,15 @@ public class RobotLocalizationViewer {
 	}
 
 	public synchronized void updateOneStep( ){		
-		System.out.println("Viewer before if: " + counter);
 		if( initFlag) {
-			System.out.println("Viewer in if: " + counter);
 			loc.update();
-			//System.out.println(counter);
 			int[] tXY = loc.getCurrentTruePosition();
 			int[] sXY = loc.getCurrentReading();
-			if( sXY != null) {
+			if( sXY != null) 
 				updateViewer(  tXY[0], tXY[1], sXY[0], sXY[1]);	
-			//	System.out.println(counter);
-			}
-			else {
+			else 
 				updateViewer(  tXY[0], tXY[1], -1, -1);	
-			}
 		}
-		counter++;
 	}
 	
 	public synchronized void updateContinuously() throws InterruptedException {
