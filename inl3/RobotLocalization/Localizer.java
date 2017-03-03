@@ -190,9 +190,10 @@ public class Localizer implements EstimatorInterface {
 	 * returns the probability entry (Tij) of the transition matrix T to go from pose 
 	 * i = (x, y, h) to pose j = (nX, nY, nH)
 	 */	
+	//bättre, men fungerar inte 100%
 	public double getTProb( int x, int y, int h, int nX, int nY, int nH) {
-		int i = x*rows + y*cols + h;
-		int j = nX*rows + nY*cols + nH;
+		int i = (x*cols + y)*4 + h;
+		int j = (nX*cols + nY)*4 + nH;
 		//Jama matrix uses java indexing (0,1,2....n-1)!
 		return tMat.get(i,j);
 	}
