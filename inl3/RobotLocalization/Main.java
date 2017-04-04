@@ -29,5 +29,8 @@ public class Main {
 		 * you can only click through your localisation stepwise
 		 */
 		new LocalizationDriver(500, viewer).start();
+
+		//analysis code
+		//while(true) l.update();
 	}
 }	

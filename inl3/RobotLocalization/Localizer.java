@@ -5,7 +5,7 @@ public class Localizer implements EstimatorInterface {
 	private int rows, cols, head, epochs, sensorFailings;
 	private int[] robot, sensorReading;
 	private Matrix tMat, oMat, fVect;
-	private double avgTrackingDiff;
+	private double avgTrackingDiffModel, trackQuotaSens, trackQuotaGuess;
 
 	private final double S1PROB = 0.05, S2PROB = 0.025;
 	private final double MIDDLE = 0.1, CORNER = 0.625, INNERCORNER = 0.325,
@@ -22,7 +22,9 @@ public class Localizer implements EstimatorInterface {
 		fVect = new Matrix(s,1,1.0/s);
 		robot = new int[]{(int) (Math.random()*rows), (int) (Math.random()*cols), (int) (Math.random()*head)};
 		sensorReading = new int[2];
-		avgTrackingDiff = 0;
+		avgTrackingDiffModel = 0;
+		trackQuotaSens = 0.0;
+		trackQuotaGuess = 0.0;
 		epochs = 0;
 		sensorFailings = 0;
 	}
@@ -120,12 +122,16 @@ public class Localizer implements EstimatorInterface {
 		updateF();
 
 		//calculating average difference in our guess from robot's real position
-		calculateAvgTrackingDiff(pos[0], pos[1], epochs);
+		calculateAvgTrackingDiffModel(pos[0], pos[1], epochs);
+		calcTrackQuota(pos[0], pos[1], epochs);
 		
-		if (epochs == 20000) {
-			System.out.println("Epoch: " + epochs + ", Avg tracking difference: " + getAvgTrackingDiff() + ", world size: " + rows+"x"+cols);
-			System.exit(0);
-		}
+		//if (epochs == 20000) {
+			//System.out.println("Epoch: " + epochs + ", tracking quota comp. to sensor model: " + trackQuotaSens/epochs 
+				//+ ", tracking quota comp. to guessing: " + trackQuotaGuess/epochs + ", world size: " + rows+"x"+cols);
+				//", Avg tracking difference MODEL: " + getAvgTrackingDiff(MODEL) 
+				//+ ", Avg tracking difference SENSOR: " + getAvgTrackingDiff(SENSOR) + ", world size: " + rows+"x"+cols);
+			//System.exit(0);
+		//}
 	}
 	
 	/*
@@ -200,9 +206,7 @@ public class Localizer implements EstimatorInterface {
 			prob += mat.get(i,i);
 		}
 		return prob;
-	} 	// P( null | (x,y) )
-		// P( (x,y) | null ) 11 * 0.0278 + 0.0556 * 8 + 1 *0.1111 + 5 * 0.0323
-		//						0.3058    +  0.4448		+ 0.1111 +		0.1615 = 
+	}
 
 	/*
 	 * returns the probability entry (Tij) of the transition matrix T to go from pose 
@@ -235,12 +239,47 @@ public class Localizer implements EstimatorInterface {
 		return newh;
 	}
 
-	public double getAvgTrackingDiff() {
-		return avgTrackingDiff;
+	public double getAvgTrackingDiff(int type) {
+		return avgTrackingDiffModel;
+	}
+
+	/**
+	  * Returns quota, Model-measure / Sensor-measure, < 1 => sumMod better and vice versa
+	  */
+	private void calcTrackQuota( int x, int y, int epoch) {
+		double maxVal = 0.0;
+		
+		int[] coords = new int[]{0, 0};
+
+		double sumMod = 0.0;
+		double sumSens = 0.0;
+		double sumGuess = 0.0;
+
+		Matrix tempMat = scale(updateO(x, y));
+
+		for (int i=0;i<rows;i++) {
+			for (int j=0;j<cols;j++) {
+				double dist = (Math.abs(i-x) + Math.abs(j-y));
+				sumMod += (double) getCurrentProb(i, j)*dist;
+				sumGuess += (double) (1.0/(rows*cols))*dist;
+				double prob = 0.0;
+				int start = i*cols*4+j*4;
+				for (int k=start; k<start+4; k++) {
+					prob += oMat.get(k,k);
+				}
+
+				sumSens += (double) prob*dist;
+			}
+		}
+		//System.out.println("sumMod: " + sumMod);
+		//System.out.println("sumSens: " + sumSens);
+
+		trackQuotaSens += sumMod / sumSens;
+		trackQuotaGuess += sumMod / sumGuess;
 	}
 
 	//uses manhattan distance
-	private void calculateAvgTrackingDiff( int x, int y, int epoch) {
+	private void calculateAvgTrackingDiffModel( int x, int y, int epoch) {
 		double maxVal = 0.0;
 		
 		int[] coords = new int[]{0, 0};
@@ -255,7 +294,7 @@ public class Localizer implements EstimatorInterface {
 			}
 		}
 		
-		avgTrackingDiff = (double) (avgTrackingDiff*(epoch-1) + (Math.abs(coords[0]-x) + Math.abs(coords[1]-y))) / epoch;
+		avgTrackingDiffModel = (double) (avgTrackingDiffModel*(epoch-1) + (Math.abs(coords[0]-x) + Math.abs(coords[1]-y))) / epoch;
 	}
 	
 	/*
@@ -318,7 +357,7 @@ public class Localizer implements EstimatorInterface {
 	private double nothingProbability (int x, int y) {
 		double prob = 0.0;
 		//there is a reason for not returning straight in if statement!
-		if ( wallDistX(x) >= 2 && wallDistY(y) >= 2) prob = MIDDLE; //P ( n | (x,y))
+		if ( wallDistX(x) >= 2 && wallDistY(y) >= 2) prob = MIDDLE; 
 		if ( wallDistX(x) == 0 && wallDistY(y) == 0) prob = CORNER;
 		if ((wallDistX(x) == 0 && wallDistY(y) == 1) || (wallDistX(x) == 1 && wallDistY(y) == 0)) prob = NEXTTOCORNER;
 		if ( wallDistX(x) == 1 && wallDistY(y) == 1) prob = INNERCORNER; 
@@ -329,7 +368,7 @@ public class Localizer implements EstimatorInterface {
 
 	//tested, functions correctly
 	private Matrix scale (Matrix m) {
-		double sum = 0;
+		double sum = 0.0;
 		for (int i=0; i<m.getRowDimension(); i++) {
 			for (int j=0; j<m.getColumnDimension(); j++) {
 				sum += m.get(i,j);
