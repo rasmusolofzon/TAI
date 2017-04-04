@@ -190,6 +190,9 @@ public class Localizer implements EstimatorInterface {
 	 * e_t = (rX, rY), X_t = i = (x, y), P(e_t | X_t)
 	 */
 	public double getOrXY( int rX, int rY, int x, int y) {
+		if (rX == -1 || rY == -1) {
+			return nothingProbability(x, y);
+		}
 		Matrix mat = updateO(x, y);
 		double prob = 0.0;
 		int start = rX*cols*4+rY*4;
@@ -197,7 +200,9 @@ public class Localizer implements EstimatorInterface {
 			prob += mat.get(i,i);
 		}
 		return prob;
-	}
+	} 	// P( null | (x,y) )
+		// P( (x,y) | null ) 11 * 0.0278 + 0.0556 * 8 + 1 *0.1111 + 5 * 0.0323
+		//						0.3058    +  0.4448		+ 0.1111 +		0.1615 = 
 
 	/*
 	 * returns the probability entry (Tij) of the transition matrix T to go from pose 
@@ -299,8 +304,9 @@ public class Localizer implements EstimatorInterface {
 					}
 				}
 			}
+			//mat = scale(mat);
 		}
-		mat = scale(mat);
+		
 		return mat;
 	}
 
@@ -310,9 +316,9 @@ public class Localizer implements EstimatorInterface {
 	*/
 	//tested, functions correctly
 	private double nothingProbability (int x, int y) {
-		double prob = 0;
+		double prob = 0.0;
 		//there is a reason for not returning straight in if statement!
-		if ( wallDistX(x) >= 2 && wallDistY(y) >= 2) prob = MIDDLE;
+		if ( wallDistX(x) >= 2 && wallDistY(y) >= 2) prob = MIDDLE; //P ( n | (x,y))
 		if ( wallDistX(x) == 0 && wallDistY(y) == 0) prob = CORNER;
 		if ((wallDistX(x) == 0 && wallDistY(y) == 1) || (wallDistX(x) == 1 && wallDistY(y) == 0)) prob = NEXTTOCORNER;
 		if ( wallDistX(x) == 1 && wallDistY(y) == 1) prob = INNERCORNER; 
